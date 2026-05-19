@@ -636,16 +636,8 @@ int hfc_fx_allocate_memory(struct port_info *pp, int rid)
 	/* allocate scsi_cmnd->cmnd area for ioctl */
 //	HFC_DBGPRT(" hfcldd : hfc_fx_allocate_memory - allocate scsi_cmnd->cmnd[] area for ioctl\n"); 
 	if(pp->ioctl_cmnd != NULL) {
-		if(pp->ioctl_cmnd->cmnd == NULL){
-			pp->ioctl_cmnd->cmnd = (uchar *)hfc_fx_kmalloc(pp, 16, GFP_KERNEL);
-			if (pp->ioctl_cmnd->cmnd == NULL){
-				logdata[0] = 0x0b;
-				goto attachmem_error_exit;
-			}
-			memset( pp->ioctl_cmnd->cmnd, 0, 16 );
-//			HFC_DBGPRT(" hfcldd : hfc_fx_allocate_memory - allocate scsi_cmnd->cmnd area for ioctl logical=%lx\n",
-//				(ulong)pp->ioctl_cmnd->cmnd);
-		}
+		/* kernel 4.x+: cmnd is a fixed-size array; no allocation needed */
+		memset(pp->ioctl_cmnd->cmnd, 0, sizeof(pp->ioctl_cmnd->cmnd));
 	}
 
 	/* allocate request_queue for ioctl */
@@ -1150,13 +1142,8 @@ int hfc_fx_free_memory(struct port_info *pp, int rid)
 	
 	/* release scsi_cmnd->cmnd area for ioctl */
 	if(pp->ioctl_cmnd != NULL) {
-		if(pp->ioctl_cmnd->cmnd != NULL){
-			memset( pp->ioctl_cmnd->cmnd, 0, 16 );
-			hfc_fx_kfree(pp, pp->ioctl_cmnd->cmnd);
-			pp->ioctl_cmnd->cmnd = NULL;
-			HFC_DBGPRT(" hfcldd : hfc_fx_free_memory - release scsi_cmnd->cmnd area for ioctl logical=%lx\n",
-				(ulong)pp->ioctl_cmnd->cmnd);
-		}
+		/* kernel 4.x+: cmnd is a fixed array; nothing to free */
+		memset(pp->ioctl_cmnd->cmnd, 0, sizeof(pp->ioctl_cmnd->cmnd));
 	}
 
 	/* release scsi_device for ioctl */
@@ -7519,10 +7506,7 @@ int hfc_fx_slave_configure(struct scsi_device *sdev)
 			HFC_ALLUNLOCK_IRQRESTORE(pp,rp,flags);
 		}
 	}
-	rq = sdev->request_queue;								/* FCLNX-GPL-409 */
-	if( rq != NULL ){
-		blk_queue_rq_timed_out( rq, NULL );
-	}														/* FCLNX-GPL-409 */
+	/* FCLNX-GPL-409: blk_queue_rq_timed_out removed in kernel 4.x+; use default timeout */
 
 //	HFC_EXIT("hfc_fx_slave_configure");
 
@@ -7759,59 +7743,59 @@ hfc_fx_probe_one(struct pci_dev *pdev, const struct pci_device_id *id, char *p)
 
 	/* set port_info */
 
-#ifdef __x86_64			
-	/* set dma_mask */
-	if ((rtn=pci_set_dma_mask(pdev, 0xffffffffffffffffULL))==0) {
+#ifdef __x86_64
+	/* set dma_mask (kernel 5.x+: pci_set_dma_mask removed; use dma_set_mask) */
+	if ((rtn=dma_set_mask(&pdev->dev, 0xffffffffffffffffULL))==0) {
 		HFC_DBGPRT(" hfcldd : Using 64bit DMA\n");
-	} else if ((rtn=pci_set_dma_mask(pdev, 0xffffffffUL))==0) {
+	} else if ((rtn=dma_set_mask(&pdev->dev, 0xffffffffUL))==0) {
 		HFC_DBGPRT(" hfcldd : Using 32bit DMA\n");
 	} else {
 		logdata[0] = (uchar)rtn;
 		hfc_fx_errlog(pp, NULL, NULL, NULL, HFC_ERRLOG_TYPE_NONE, ERRID_HFCP_ERR9, 0xC3, logdata, 16) ;
 		goto hfc_probe_error;
 	}
-#endif			
+#endif
 			
 	rtn=0;
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37)
 	dma_mask = DMA_BIT_MASK(64); /* FCLNX-GPL-564 start */
 	if (sizeof(dma_addr_t) > 4) {
-		if (pci_set_dma_mask(pdev, DMA_BIT_MASK(64)) == 0) {
-			if (pci_set_consistent_dma_mask(pdev, DMA_BIT_MASK(64))) {
-				rtn=pci_set_consistent_dma_mask(pdev, DMA_BIT_MASK(32));
+		if (dma_set_mask(&pdev->dev, DMA_BIT_MASK(64)) == 0) {
+			if (dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(64))) {
+				rtn=dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(32));
 				dma_mask = DMA_BIT_MASK(32);
 			}
 		}
 		else
 		{
 			dma_mask = DMA_BIT_MASK(32);
-			rtn=pci_set_dma_mask(pdev, DMA_BIT_MASK(32));
+			rtn=dma_set_mask(&pdev->dev, DMA_BIT_MASK(32));
 		}
 	}
 	else
 	{
 		dma_mask = DMA_BIT_MASK(32);
-		rtn=pci_set_dma_mask(pdev, DMA_BIT_MASK(32)); /* FCLNX-GPL-564 end */
+		rtn=dma_set_mask(&pdev->dev, DMA_BIT_MASK(32)); /* FCLNX-GPL-564 end */
 	}
 #else
 	dma_mask = DMA_64BIT_MASK;
 	if (sizeof(dma_addr_t) > 4) {
-		if (pci_set_dma_mask(pdev, DMA_64BIT_MASK) == 0) {
-			if (pci_set_consistent_dma_mask(pdev, DMA_64BIT_MASK)) {
-				rtn=pci_set_consistent_dma_mask(pdev, DMA_32BIT_MASK);
+		if (dma_set_mask(&pdev->dev, DMA_64BIT_MASK) == 0) {	/* kernel 5.x+ */
+			if (dma_set_coherent_mask(&pdev->dev, DMA_64BIT_MASK)) {
+				rtn=dma_set_coherent_mask(&pdev->dev, DMA_32BIT_MASK);	/* kernel 5.x+ */
 				dma_mask = DMA_32BIT_MASK;
 			}
 		}
 		else
 		{
 			dma_mask = DMA_32BIT_MASK;
-			rtn=pci_set_dma_mask(pdev, DMA_32BIT_MASK);
+			rtn=dma_set_mask(&pdev->dev, DMA_32BIT_MASK);	/* kernel 5.x+ */
 		}
 	}
 	else
 	{
 		dma_mask = DMA_32BIT_MASK;
-		rtn=pci_set_dma_mask(pdev, DMA_32BIT_MASK);
+		rtn=dma_set_mask(&pdev->dev, DMA_32BIT_MASK);	/* kernel 5.x+ */
 	}
 #endif
 
@@ -8745,7 +8729,7 @@ struct fc_host_statistics *hfc_fx_get_statistics(struct Scsi_Host *host)
 	HFC_ALLLOCK_IRQSAVE(pp,rp,flags);
 	memset(&pp->port_statistics,0,sizeof(struct fc_host_statistics));
 	
-	seconds = get_seconds();
+	seconds = ktime_get_real_seconds();	/* kernel 5.6+: get_seconds removed */
 	if (seconds < pp->reset_stat_time)
 		pp->port_statistics.seconds_since_last_reset = (uint64_t)((uint64_t)seconds - ((uint64_t)1 + (uint64_t)pp->reset_stat_time));
 	else
@@ -8841,7 +8825,7 @@ void hfc_fx_reset_statistics(struct Scsi_Host *host)
 		}
 	}
 	
-	pp->reset_stat_time = get_seconds();
+	pp->reset_stat_time = ktime_get_real_seconds();	/* kernel 5.6+ */
 	HFC_ALLUNLOCK_IRQRESTORE(pp,rp,flags);
 	
 	HFC_EXIT("hfc_fx_reset_statistics");
@@ -9013,7 +8997,7 @@ void hfc_fx_fc_host_init(struct Scsi_Host *host, struct port_info *pp)
 	fc_host_dev_loss_tmo(host) = pp->dev_loss_tmo;	/* FCLNX-GPL-564 */
 #endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37) */ /* FCLNX-GPL-564 */
 
-	pp->reset_stat_time = get_seconds();
+	pp->reset_stat_time = ktime_get_real_seconds();	/* kernel 5.6+ */
 }
 #endif // LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,16)
 #endif /* SYSFS_SUPPORT */ /* FCLNX-GPL-191 */
@@ -9267,7 +9251,7 @@ int hfc_fx_set_interrupts(struct port_info *pp, int type)
 				logdata[1] = (uchar)err ;
 				hfc_fx_errlog(pp, NULL, NULL, NULL, HFC_ERRLOG_TYPE_NONE, ERRID_HFCP_EVNT3, 0xB0, logdata, 16) ;
 				if (err > 0) {
-					pci_disable_msix(pdev);
+					pci_free_irq_vectors(pdev);	/* kernel 4.8+: pci_disable_msix removed */
 					type = HFC_INT_TYPE_MSIX;
 				}
 				else {
@@ -9593,22 +9577,25 @@ int hfc_fx_set_intr_entry(struct port_info *pp,int type){
 
 	/* Enable MSI or MSIX function */
 	err = 0;
+	/* kernel 4.8+: pci_enable_msix/msi_exact removed; use pci_alloc_irq_vectors */
 	if( type == HFC_INT_TYPE_MSIX ||
 		type == HFC_INT_TYPE_MSIX_SHORTAGE ||
-		type == HFC_INT_TYPE_MSIX_MULTI)
-		err = pci_enable_msix(pdev, pp->entries, nvec);
-	else if( type == HFC_INT_TYPE_MSI)
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 14, 0) /* FCLNX-GPL-FX-496 start */
-		err = pci_enable_msi_block(pdev, pp->core_num * 2);
-#else
-		err = pci_enable_msi_exact(pdev, (int)pp->core_num * 2);
-#endif /* FCLNX-GPL-FX-496 end */
-	else if( type == HFC_INT_TYPE_MSI_SHORTAGE )
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 14, 0)
-		err = pci_enable_msi_block(pdev, nvec); /* FCLNX-GPL-FX-496 start */
-#else
-		err = pci_enable_msi_exact(pdev, (int)nvec);
-#endif /* FCLNX-GPL-FX-496 end */
+		type == HFC_INT_TYPE_MSIX_MULTI) {
+		int _nvec = pci_alloc_irq_vectors(pdev, nvec, nvec, PCI_IRQ_MSIX);
+		if (_nvec < 0) { err = _nvec; } else {
+			int _i;
+			err = 0;
+			for (_i = 0; _i < nvec; _i++)
+				pp->entries[_i].vector = pci_irq_vector(pdev, _i);
+		}
+	} else if( type == HFC_INT_TYPE_MSI) {
+		int _n = (int)pp->core_num * 2;
+		int _nvec = pci_alloc_irq_vectors(pdev, _n, _n, PCI_IRQ_MSI);
+		err = (_nvec < 0) ? _nvec : 0;
+	} else if( type == HFC_INT_TYPE_MSI_SHORTAGE ) {
+		int _nvec = pci_alloc_irq_vectors(pdev, nvec, nvec, PCI_IRQ_MSI);
+		err = (_nvec < 0) ? _nvec : 0;
+	}
 
 	if(err){
 		HFC_DBGPRT("hfcldd%d: %s, %d: some error occured. errno=%d\n",pp->dev_minor,__func__,__LINE__,err);
@@ -9775,14 +9762,14 @@ void hfc_fx_free_interrupts(struct port_info *pp, int type, int nvec, int pci_fa
 		for(i=0; i < nvec; i++)
 			free_irq(pp->intr_entries[i].vector, &pp->intr_entries[i]);
 		if(pci_fail == 0)
-			pci_disable_msix(pdev);
+			pci_free_irq_vectors(pdev);	/* kernel 4.8+: pci_disable_msix removed */
 		break;
 
 	/****** INT type is MSI-X Vector Shortage ********/
 	case	HFC_INT_TYPE_MSIX_SHORTAGE:
 		if(nvec != 0)
 			free_irq(pp->intr_entries[0].vector, &pp->intr_entries[0]);
-		if(pci_fail == 0) pci_disable_msix(pdev);
+		if(pci_fail == 0) pci_free_irq_vectors(pdev);	/* kernel 4.8+: pci_disable_msix removed */
 			chr_wk  = hfc_fx_read_reg ( pp, ( uint )HFC_IOSPACE_MSIXVSHORT,( char )0x1 );
 			chr_wk &= ~(0x80);
 			hfc_fx_write_reg( pp, ( uint )HFC_IOSPACE_MSIXVSHORT, ( char )0x1, ( char )chr_wk );
@@ -9792,7 +9779,7 @@ void hfc_fx_free_interrupts(struct port_info *pp, int type, int nvec, int pci_fa
 	case	HFC_INT_TYPE_MSIX_MULTI:
 		for(i=0; i < nvec; i++)
 			free_irq(pp->intr_entries[i].vector, &pp->intr_entries[i]);
-		if(pci_fail == 0) pci_disable_msix(pdev);
+		if(pci_fail == 0) pci_free_irq_vectors(pdev);	/* kernel 4.8+: pci_disable_msix removed */
 		/* MCW configuration (Disable RSS mode for this function) */
 		chr_wk  = hfc_fx_read_reg_ext ( pp, 0x23c, 0x1 );
 		chr_wk &= ~( (0x80) >> PCI_FUNC(pp->pci_cfginf->devfn) );
@@ -12476,12 +12463,13 @@ static inline int hfc_fx_count_cpu(int socket_no, uchar *cpu_core_bitmap, int le
 	int					cpu_core_num=0;
 
 	memset( cpu_core_bitmap, 0, len );
+	/* kernel 6.7+: cpuinfo_x86.phys_proc_id/cpu_core_id removed;
+	 *  use topology_physical_package_id(cpu) / topology_core_id(cpu) */
 	for_each_present_cpu(cpu) {
-		cpuinfo = &cpu_data(cpu);
-		if( cpuinfo->phys_proc_id == socket_no
-		 && cpuinfo->cpu_core_id < len
-		 && cpu_core_bitmap[cpuinfo->cpu_core_id] == 0 ){
-			cpu_core_bitmap[cpuinfo->cpu_core_id] = 1;
+		if( topology_physical_package_id(cpu) == (int)socket_no
+		 && topology_core_id(cpu) < len
+		 && cpu_core_bitmap[topology_core_id(cpu)] == 0 ){
+			cpu_core_bitmap[topology_core_id(cpu)] = 1;
 			cpu_core_num++;
 		}
 	}
@@ -12505,11 +12493,11 @@ static inline struct cpuinfo_x86* hfc_fx_cpu_get_cpuinfo_x86(int phys_proc_id, i
 	struct cpuinfo_x86 	*cpuinfo=NULL, *cpuinfo_wk;
 	uint32_t			cpu;
 
+	/* kernel 6.7+: use topology_physical_package_id/core_id */
 	for_each_present_cpu(cpu) {
-		cpuinfo_wk = &cpu_data(cpu);
-		if((cpuinfo_wk->phys_proc_id == phys_proc_id)
-			&& (cpuinfo_wk->cpu_core_id == cpu_core_id)) {
-			cpuinfo = cpuinfo_wk;
+		if((topology_physical_package_id(cpu) == (int)phys_proc_id)
+			&& (topology_core_id(cpu) == (int)cpu_core_id)) {
+			cpuinfo = &cpu_data(cpu);
 			break;
 		}
 	}
@@ -12562,15 +12550,15 @@ void hfc_fx_calc_cpu_num(struct port_info *pp)
 	memset( socket_bitmap, 0, HFC_MAX_CPU_NUM );	/* FCLNX-GPL-FX-254,272 */
 	memset( cpu_core_bitmap, 0, HFC_MAX_CPU_NUM );	/* FCLNX-GPL-FX-254,272 */
 
+	/* kernel 6.7+: use topology_physical_package_id(cpu) */
 	for(l=0; l < logical_cpu ; l++){
-		cpuinfo = &cpu_data( l );
-		
+		int _pkg = topology_physical_package_id(l);
 		/* Calcurate the number of the sockets *//* FCLNX-GPL-FX-254,272 */
-		if( cpuinfo->phys_proc_id >= HFC_MAX_CPU_NUM )
+		if( _pkg < 0 || _pkg >= HFC_MAX_CPU_NUM )
 			continue;
 
-		if( socket_bitmap[cpuinfo->phys_proc_id] == 0 ){
-			socket_bitmap[cpuinfo->phys_proc_id] = 1;
+		if( socket_bitmap[_pkg] == 0 ){
+			socket_bitmap[_pkg] = 1;
 			socket_num++;
 		}
 	}
