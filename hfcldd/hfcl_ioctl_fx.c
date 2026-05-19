@@ -336,7 +336,8 @@ int hfc_fx_ioctl( struct inode *inode, struct file *file, unsigned int cmd, unsi
 		HFC_ERRPRT("HFC_FNC_DIAG0=0x%x \n",(uint)HFC_FNC_DIAG0);
 		return( -ENOTTY ) ;
 	}
-	if( !access_ok(VERIFY_WRITE,(void *)arg,_IOC_SIZE(cmd) ) )
+	/* kernel 5.0+: access_ok no longer takes type argument */
+	if( !access_ok((void *)arg, _IOC_SIZE(cmd)) )
 	{
 		HFC_DBGPRT("ioctl error(trcid=0x%04x, subid=0x%04x) \n",
 				HFC_TRC_IOCTL_DIAG, 0x00 );
@@ -1727,7 +1728,7 @@ int hfc_fx_sciocmd( struct port_info *pp, void *arg, int internal, int timeout) 
 	/* Setting of an SCSI command */
 	cmnd   -> cmd_len           = cdb.command_length;
 	HFC_MEMCPY( cmnd->cmnd, cdb.cdb, cdb.command_length );
-	cmnd   -> tag               = cdb.tag_q;
+	/* kernel 5.4+: scsi_cmnd->tag removed; tag_q field ignored */
 
 	RC = HFC_FX_STRATEGY( cmnd, (void *) hfc_fx_ioctl_iodone );
 	/* Need to sleep here. (iodone is executed even if error occurred in hfc_fx_strategy)  */
