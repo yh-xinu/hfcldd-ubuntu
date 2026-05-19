@@ -100,9 +100,11 @@ typedef unsigned int	atomic_t;
 typedef unsigned int	irqreturn_t;
 
 /* FCLNX-GPL-124 */
-struct msix_entry {
-	ushort  vector; /* kernel uses to write allocated vector */
-	ushort  entry;  /* driver uses to specify entry, OS writes */
+/* kernel 4.8+: pci_enable_msix removed; use pci_alloc_irq_vectors.
+ * We retain a local hfc_msix_entry struct for vector bookkeeping. */
+struct hfc_msix_entry {
+	ushort  vector; /* assigned IRQ number */
+	ushort  entry;  /* logical entry index */
 };
 
 
@@ -1717,7 +1719,7 @@ struct adap_info {
 	struct hfc_err_rec		err_rec;				/* FCLNX_GPL-0151 *//* FCLNX_GPL-147 */
 
 #define HFC_MSIX_NVEC			2		/* The number of MSI-X Vectors */
-	struct msix_entry	entries[HFC_MSIX_NVEC]; /* The size of "struct msix_entry" is 4byte */
+	struct hfc_msix_entry	entries[HFC_MSIX_NVEC]; /* renamed to avoid kernel conflict */
 	int msi_enable; /* Set INT type. 0:INTx 1:MSI 2:MSI-X */
 	int msi_flag; /* Running INT type. 0:INTx 1:MSI 2:MSI-X */
 	

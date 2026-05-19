@@ -143,15 +143,15 @@ uchar	logdata[16] ;
  * Notes:       Caller should be in process level or interruption level.
  */
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37)
-int hfc_strategy_lck(struct scsi_cmnd *cmnd, void (*iodone)(struct scsi_cmnd *))
+int hfc_strategy_lck(struct scsi_cmnd *cmnd)
 #else
 int hfc_strategy(struct scsi_cmnd *cmnd, void (*iodone)(struct scsi_cmnd *))
 #endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37) */ /* FCLNX-GPL-564 */
 {
 	if (( hfc_manage_info.lg_target_info == NULL ) || (!hfc_manage_info.hfcldd_mp_mod)) {
-		return ( hfc_strategy_pg(cmnd,iodone) );
+		return ( hfc_strategy_pg(cmnd, NULL) );
 	} else {
-		return ( hfc_manage_info.npubp->hfc_mp_strategy(cmnd,iodone) );	/* FCLNX-GPL-204 */
+		return ( hfc_manage_info.npubp->hfc_mp_strategy(cmnd, NULL) );	/* FCLNX-GPL-204 */
 	}
 }
 

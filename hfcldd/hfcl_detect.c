@@ -384,7 +384,7 @@ int hfc_read_hfcbios(struct adap_info *ap);
 int hfc_proc_info_pfb(struct Scsi_Host *host, char *buffer, char **start, off_t offset, int length, int inout);
 const char *hfc_info_pfb(struct Scsi_Host *host);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37)
-int hfc_strategy_pfb_lck(struct scsi_cmnd *cmnd, void (*iodone)(struct scsi_cmnd *));
+int hfc_strategy_pfb_lck(struct scsi_cmnd *cmnd);
 #else
 int hfc_strategy_pfb(struct scsi_cmnd *cmnd, void (*iodone)(struct scsi_cmnd *));
 #endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37) */ /* FCLNX-GPL-564 */
@@ -641,16 +641,10 @@ int hfc_allocate_memory(struct adap_info *ap, int internal)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,30)	/* FCLNX-GPL-0343 */
 	/* allocate scsi_cmnd->cmnd area for Task Management */
 	HFC_DBGPRT(" hfcldd : hfc_allocate_memory - allocate scsi_cmnd->cmnd[] area \n"); 
+	/* kernel >= 3.x: cmnd is a fixed-size array in scsi_cmnd; no allocation needed */
 	if(ap->cmnd_pool != NULL) {
 		for(i=0;i<ap->cmnd_num;i++){
-			if(ap->cmnd_pool[i].cmnd == NULL){
-				ap->cmnd_pool[i].cmnd = (uchar *)hfc_kmalloc(ap, 16, GFP_ATOMIC);
-				if (ap->cmnd_pool[i].cmnd == NULL){
-					hfc_errlog(NULL, NULL, NULL, HFC_ERRLOG_TYPE_NONE, ERRID_HFCP_ERR9, 0x3C, NULL, 0) ;
-					goto attachmem_error_exit;
-				}
-			}
-			memset( ap->cmnd_pool[i].cmnd, 0, 16 );
+			memset( ap->cmnd_pool[i].cmnd, 0, sizeof(ap->cmnd_pool[i].cmnd) );
 		}
 	}
 #endif												/* FCLNX-GPL-0343 */
@@ -680,15 +674,9 @@ int hfc_allocate_memory(struct adap_info *ap, int internal)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,30)	/* FCLNX-GPL-0343 */
 	/* allocate scsi_cmnd->cmnd area for ioctl */
 	HFC_DBGPRT(" hfcldd : hfc_allocate_memory - allocate scsi_cmnd->cmnd[] area for ioctl\n"); 
+	/* kernel >= 3.x: cmnd is a fixed-size array; no allocation needed */
 	if(ap->ioctl_cmnd != NULL) {
-		if(ap->ioctl_cmnd->cmnd == NULL){
-			ap->ioctl_cmnd->cmnd = (uchar *)hfc_kmalloc(ap, 16, GFP_ATOMIC);
-			if (ap->ioctl_cmnd->cmnd == NULL){
-				hfc_errlog(NULL, NULL, NULL, HFC_ERRLOG_TYPE_NONE, ERRID_HFCP_ERR9, 0x3C, NULL, 0) ;
-				goto attachmem_error_exit;
-			}
-			memset( ap->ioctl_cmnd->cmnd, 0, 16 );
-		}
+		memset( ap->ioctl_cmnd->cmnd, 0, sizeof(ap->ioctl_cmnd->cmnd) );
 	}
 
 	/* allocate request_queue for ioctl */
@@ -1110,12 +1098,9 @@ int hfc_free_memory(struct adap_info *ap, int internal)
 	/* Release scsi_cmnd->cmnd area for Task Management */
 	HFC_DBGPRT(" hfcldd : hfc_free_memory - release scsi_cmnd->cmnd[] area \n"); 
 	if(ap->cmnd_pool != NULL) {
+		/* kernel >= 3.x: cmnd is a fixed array; nothing to free */
 		for(i=0;i<ap->cmnd_num;i++){
-			if(ap->cmnd_pool[i].cmnd != NULL){
-				memset( ap->cmnd_pool[i].cmnd, 0, 16 );
-				hfc_kfree(ap, ap->cmnd_pool[i].cmnd);
-				ap->cmnd_pool[i].cmnd = NULL;
-			}
+			memset( ap->cmnd_pool[i].cmnd, 0, sizeof(ap->cmnd_pool[i].cmnd) );
 		}
 	}
 #endif												/* FCLNX-GPL-0343 */
@@ -1182,11 +1167,8 @@ int hfc_free_memory(struct adap_info *ap, int internal)
 	/* release scsi_cmnd->cmnd area for ioctl */
 	HFC_DBGPRT(" hfcldd : hfc_free_memory - release scsi_cmnd->cmnd[] area for ioctl\n"); 
 	if(ap->ioctl_cmnd != NULL) {
-		if(ap->ioctl_cmnd->cmnd != NULL){
-			memset( ap->ioctl_cmnd->cmnd, 0, 16 );
-			hfc_kfree(ap, ap->ioctl_cmnd->cmnd);
-			ap->ioctl_cmnd->cmnd = NULL;
-		}
+		/* kernel >= 3.x: cmnd is a fixed array; nothing to free */
+		memset( ap->ioctl_cmnd->cmnd, 0, sizeof(ap->ioctl_cmnd->cmnd) );
 	}
 #endif
 
@@ -12052,10 +12034,7 @@ hfc_slave_configure(struct scsi_device *sdev)
 		set_bit(HFC_DEVINF_VALID, (ulong *)&dev->flags);
 		HFC_ADAPUNLOCK_IRQRESTORE(flags);					/* FCLNX-GPL-0343 */
 	}
-	rq = sdev->request_queue;								/* FCLNX-GPL-409 */
-	if( rq != NULL ){
-		blk_queue_rq_timed_out( rq, NULL );
-	}														/* FCLNX-GPL-409 */
+	/* FCLNX-GPL-409: blk_queue_rq_timed_out removed in kernel 4.x+; use default timeout */
 
 	HFC_EXIT("hfc_slave_configure");
 
@@ -12662,8 +12641,8 @@ static ssize_t hfc_cpu_affinity_store(struct device *dev, struct device_attribut
 
 		memset(&mask, 0, sizeof(struct cpumask));
 
-    	// use __bitmap_parse as workaround
-    	err = __bitmap_parse(buf, PAGE_SIZE, 0, mask.bits, nr_cpumask_bits);
+    	/* kernel 6.x: __bitmap_parse removed; use bitmap_parse */
+    	err = bitmap_parse(buf, PAGE_SIZE, mask.bits, nr_cpumask_bits);
     	if(err != 0){
     		return err;
     	}
@@ -12934,6 +12913,24 @@ struct device_attribute *hfcldd_host_attrs_pfb[] = {
 	NULL,
 };
 /* >>> FCLNX-GPL-FX-481 */
+
+/* kernel 4.14+: shost_attrs replaced by shost_groups */
+static struct attribute_group hfcldd_host_attr_group = {
+	.attrs = (struct attribute **)hfcldd_host_attrs,
+};
+static const struct attribute_group *hfcldd_host_groups[] = {
+	&hfcldd_host_attr_group,
+	NULL,
+};
+
+static struct attribute_group hfcldd_host_attr_group_pfb = {
+	.attrs = (struct attribute **)hfcldd_host_attrs_pfb,
+};
+static const struct attribute_group *hfcldd_host_groups_pfb[] = {
+	&hfcldd_host_attr_group_pfb,
+	NULL,
+};
+
 #else
 static ssize_t
 hfcldd_conf_show(struct class_device *cdev, char *buf)
@@ -12972,7 +12969,7 @@ DEF_SCSI_QCMD(hfc_strategy)
 //static struct scsi_host_template hfcldd_driver_template = {
 struct scsi_host_template hfcldd_driver_template = {
 
-	.proc_dir=					NULL,					
+	/* .proc_dir removed in kernel 4.x+ */
 	.proc_name=					"hfcldd",
 #if defined(HFC_RHEL7) || defined(HFC_X8664_SLES12)|| defined(HFC_X8664_OEL7)
 //	.proc_info=					hfc_proc_info_k26,			
@@ -13014,20 +13011,18 @@ struct scsi_host_template hfcldd_driver_template = {
 	.this_id=					-1,	
 	.sg_tablesize=				HFC_SG_TABLESIZE,
 	.cmd_per_lun=				HFC_CMD_PER_LUN,
-	.use_clustering=			ENABLE_CLUSTERING,
+	/* .use_clustering / ENABLE_CLUSTERING removed in kernel 5.x+ */
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,16)
-	.shost_attrs=				hfcldd_host_attrs,
+	.shost_groups=				hfcldd_host_groups,
 #endif /* KERNEL_VERSION(2,6,16) */
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 19, 0)
-	.use_blk_tags =				1,
-#endif
+	/* .use_blk_tags removed in kernel 5.x+ */
 };
 
 
 /* FCLNX-GPL-575 */
 static struct scsi_host_template hfcldd_driver_template_mp = {
 
-	.proc_dir=					NULL,					
+	/* .proc_dir removed in kernel 4.x+ */
 	.proc_name=					"hfcldd",
 #if defined(HFC_RHEL7) || defined(HFC_X8664_SLES12)|| defined(HFC_X8664_OEL7)
 //	.proc_info=					hfc_proc_info_k26,			
@@ -13063,13 +13058,11 @@ static struct scsi_host_template hfcldd_driver_template_mp = {
 	.this_id=					-1,	
 	.sg_tablesize=				HFC_SG_TABLESIZE,
 	.cmd_per_lun=				HFC_CMD_PER_LUN,
-	.use_clustering=			ENABLE_CLUSTERING,
+	/* .use_clustering / ENABLE_CLUSTERING removed in kernel 5.x+ */
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,16)
-	.shost_attrs=				hfcldd_host_attrs,
+	.shost_groups=				hfcldd_host_groups,
 #endif /* KERNEL_VERSION(2,6,16) */
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 19, 0)
-	.use_blk_tags =				1,
-#endif
+	/* .use_blk_tags removed in kernel 5.x+ */
 };		/* FCLNX-GPL-575 */
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37)
@@ -13078,7 +13071,7 @@ DEF_SCSI_QCMD(hfc_strategy_pfb)
 
 static struct scsi_host_template hfcldd_driver_template_platform_bus = {		/* FCLNX-GPL-204 */
 
-	.proc_dir=					NULL,					
+	/* .proc_dir removed in kernel 4.x+ */
 	.proc_name=					"vhfcldd",	
 #if defined(HFC_RHEL7) || defined(HFC_X8664_SLES12)|| defined(HFC_X8664_OEL7)
 //	.proc_info=					hfc_proc_info_pfb,			
@@ -13114,13 +13107,11 @@ static struct scsi_host_template hfcldd_driver_template_platform_bus = {		/* FCL
 	.this_id=					-1,	
 	.sg_tablesize=				HFC_SG_TABLESIZE,
 	.cmd_per_lun=				HFC_CMD_PER_LUN,
-	.use_clustering=			ENABLE_CLUSTERING,
+	/* .use_clustering / ENABLE_CLUSTERING removed in kernel 5.x+ */
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,16)
-	.shost_attrs=				hfcldd_host_attrs_pfb,						/* FCLNX-GPL-FX-481 */
+	.shost_groups=				hfcldd_host_groups_pfb,					/* FCLNX-GPL-FX-481 */
 #endif /* KERNEL_VERSION(2,6,16) */
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 19, 0)
-	.use_blk_tags =				1,
-#endif
+	/* .use_blk_tags removed in kernel 5.x+ */
 };
 
 
@@ -13364,9 +13355,9 @@ hfc_ex_probe_one(struct pci_dev *pdev, const struct pci_device_id *id)	/* FIVE-F
 
 #ifdef __x86_64			
 	/* set dma_mask */
-	if ((rtn=pci_set_dma_mask(pdev, 0xffffffffffffffffULL))==0) {
+	if ((rtn=dma_set_mask(&pdev->dev, 0xffffffffffffffffULL))==0) {
 		HFC_DBGPRT(" hfcldd : Using 64bit DMA\n");
-	} else if ((rtn=pci_set_dma_mask(pdev, 0xffffffffUL))==0) {
+	} else if ((rtn=dma_set_mask(&pdev->dev, 0xffffffffUL))==0) {
 		HFC_DBGPRT(" hfcldd : Using 32bit DMA\n");
 	} else {
 		hfc_errlog(ap, NULL, NULL, HFC_ERRLOG_TYPE_NONE, ERRID_HFCP_ERR9, 0xC3, (uchar *)&rtn, 4) ;/* FCLNX-GPL-161 */
@@ -13378,42 +13369,42 @@ hfc_ex_probe_one(struct pci_dev *pdev, const struct pci_device_id *id)	/* FIVE-F
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37)
 	dma_mask = DMA_BIT_MASK(64); /* FCLNX-GPL-564 start */
 	if (sizeof(dma_addr_t) > 4) {
-		if (pci_set_dma_mask(pdev, DMA_BIT_MASK(64)) == 0) {
-			if (pci_set_consistent_dma_mask(pdev, DMA_BIT_MASK(64))) {
-				rtn=pci_set_consistent_dma_mask(pdev, DMA_BIT_MASK(32));
+		if (dma_set_mask(&pdev->dev, DMA_BIT_MASK(64)) == 0) {
+			if (dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(64))) {
+				rtn=dma_set_coherent_mask(&pdev->dev, DMA_BIT_MASK(32));
 				dma_mask = DMA_BIT_MASK(32);
 			}
 		}
 		else
 		{
 			dma_mask = DMA_BIT_MASK(32);
-			rtn=pci_set_dma_mask(pdev, DMA_BIT_MASK(32));
+			rtn=dma_set_mask(&pdev->dev, DMA_BIT_MASK(32));
 		}
 	}
 	else
 	{
 		dma_mask = DMA_BIT_MASK(32);
-		rtn=pci_set_dma_mask(pdev, DMA_BIT_MASK(32)); /* FCLNX-GPL-564 end */
+		rtn=dma_set_mask(&pdev->dev, DMA_BIT_MASK(32)); /* FCLNX-GPL-564 end */
 	}
 #else
 	dma_mask = DMA_64BIT_MASK;
 	if (sizeof(dma_addr_t) > 4) {
-		if (pci_set_dma_mask(pdev, DMA_64BIT_MASK) == 0) {
-			if (pci_set_consistent_dma_mask(pdev, DMA_64BIT_MASK)) {
-				rtn=pci_set_consistent_dma_mask(pdev, DMA_32BIT_MASK);
+		if (dma_set_mask(&pdev->dev, DMA_64BIT_MASK) == 0) {
+			if (dma_set_coherent_mask(&pdev->dev, DMA_64BIT_MASK)) {
+				rtn=dma_set_coherent_mask(&pdev->dev, DMA_32BIT_MASK);
 				dma_mask = DMA_32BIT_MASK;
 			}
 		}
 		else
 		{
 			dma_mask = DMA_32BIT_MASK;
-			rtn=pci_set_dma_mask(pdev, DMA_32BIT_MASK);
+			rtn=dma_set_mask(&pdev->dev, DMA_32BIT_MASK);
 		}
 	}
 	else
 	{
 		dma_mask = DMA_32BIT_MASK;
-		rtn=pci_set_dma_mask(pdev, DMA_32BIT_MASK);
+		rtn=dma_set_mask(&pdev->dev, DMA_32BIT_MASK);
 	}
 #endif
 	if(rtn){
@@ -14459,7 +14450,7 @@ struct fc_host_statistics *hfc_get_statistics(struct Scsi_Host *host)
 
 		/* Mailbox processing */ /* FCLNX-GPL-243 */
 		if( ( rtn = hfc_mailbox_proc( ap, HFC_MB_TMR, HFC_MB_PROC_TO, ap->els_retry ) ) == 0 ) {
-			seconds = get_seconds();
+			seconds = ktime_get_real_seconds();
 
 			HFC_ADAPLOCK_IRQSAVE(flags);
 
@@ -14573,7 +14564,7 @@ void hfc_reset_statistics(struct Scsi_Host *host)
 		
 		HFC_ADAPLOCK_IRQSAVE(flags);
 		
-		ap->reset_stat_time = get_seconds();
+		ap->reset_stat_time = ktime_get_real_seconds();
 	}
 	else {
 		HFC_ADAPLOCK_IRQSAVE(flags);
@@ -14817,7 +14808,7 @@ void hfc_fc_host_init(struct Scsi_Host *host, struct adap_info *ap)
 	fc_host_dev_loss_tmo(host) = ap->dev_loss_tmo;	/* FCLNX-GPL-564 */
 #endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37) */ /* FCLNX-GPL-564 */
 
-	ap->reset_stat_time = get_seconds();
+	ap->reset_stat_time = ktime_get_real_seconds();
 }
 #endif // LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,16)
 #endif /* SYSFS_SUPPORT */ /* FCLNX-GPL-191 */
@@ -15158,8 +15149,17 @@ int hfc_set_interrupts(struct adap_info *ap, int type)
 				ap->entries[1].entry = 31;	/* Vec#31 */
 			}
 			
-			/* Enable MSI-X */
-			err = pci_enable_msix(pdev, ap->entries, HFC_MSIX_NVEC);
+			/* Enable MSI-X (kernel 4.8+: pci_alloc_irq_vectors) */
+			{
+				int nvec = pci_alloc_irq_vectors(pdev, HFC_MSIX_NVEC, HFC_MSIX_NVEC, PCI_IRQ_MSIX);
+				if (nvec < 0) { err = nvec; } else { err = 0; }
+				/* fill entries[].vector for downstream code */
+				if (err == 0) {
+					int _i;
+					for (_i = 0; _i < HFC_MSIX_NVEC; _i++)
+						ap->entries[_i].vector = pci_irq_vector(pdev, _i);
+				}
+			}
 			if(err != 0){	/* There are some err. */
 				memset(logdata, 0, 16);
 				logdata[0] = 0x05 ;
@@ -15191,7 +15191,7 @@ int hfc_set_interrupts(struct adap_info *ap, int type)
 						free_irq(ap->entries[i].vector, ap);
 					}
 					/* free MSI-X */
-					pci_disable_msix(pdev);
+					pci_free_irq_vectors(pdev);
 					/* Try INTx */
 					flagINTx = TRUE;
 					break;
@@ -15283,7 +15283,7 @@ void hfc_free_interrupts(struct adap_info *ap, int type, int pci_fail)	/* FCLNX-
 			}
 
 			if(pci_fail == 0){	/* FCLNX-GPL-306 */
-				pci_disable_msix(pdev);
+				pci_free_irq_vectors(pdev);
 			}
 			break;
 			
@@ -16432,12 +16432,12 @@ const char *hfc_info_pfb (struct Scsi_Host *host)
  * Notes:       Caller should be in process level or interruption level.
  */
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37)
-int hfc_strategy_pfb_lck(struct scsi_cmnd *cmnd, void (*iodone)(struct scsi_cmnd *))
+int hfc_strategy_pfb_lck(struct scsi_cmnd *cmnd)
 #else
 int hfc_strategy_pfb(struct scsi_cmnd *cmnd, void (*iodone)(struct scsi_cmnd *))
 #endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37) */ /* FCLNX-GPL-564 */
 {
-	return ( hfc_manage_info.npubp->hfc_mp_strategy_pfb(cmnd,iodone) );
+	return ( hfc_manage_info.npubp->hfc_mp_strategy_pfb(cmnd, NULL) );
 }
 
 int hfc_eh_abort_pfb(struct scsi_cmnd *cmnd)

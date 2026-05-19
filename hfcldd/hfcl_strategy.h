@@ -53,7 +53,7 @@ extern void hfc_cancel_wxque(
 	uchar                       type);
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37)
-int hfc_strategy_lck(struct scsi_cmnd *cmnd, void (*iodone)(struct scsi_cmnd *));
+int hfc_strategy_lck(struct scsi_cmnd *cmnd);
 #else
 int hfc_strategy(struct scsi_cmnd *cmnd, void (*iodone)(struct scsi_cmnd *));
 #endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37) */ /* FCLNX-GPL-564 */
