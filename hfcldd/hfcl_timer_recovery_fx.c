@@ -6248,8 +6248,9 @@ void hfc_fx_hand2_trace(
 			HFC_4L_TO_4B(trc4->retries, cmnd->retries);
 			HFC_4L_TO_4B(trc4->allowed, cmnd->allowed);
 			HFC_MEMCPY(&trc4->cmnd[0], cmnd->cmnd, 16);
-			HFC_4L_TO_4B(trc4->resid, cmnd->sdb.resid);
-			HFC_4L_TO_4B(trc4->serial_number, cmnd->serial_number);
+			/* kernel 5.x+: sdb.resid → resid_len; serial_number removed */
+			HFC_4L_TO_4B(trc4->resid, cmnd->resid_len);
+			HFC_4L_TO_4B(trc4->serial_number, 0);
 			HFC_4L_TO_4B(trc4->result, cmnd->result);
 		}
 	}/*-- trace format 4 --*/
@@ -6473,8 +6474,9 @@ void hfc_fx_hand2_trace(
 			HFC_4L_TO_4B(trc5->retries, cmnd->retries);
 			HFC_4L_TO_4B(trc5->allowed, cmnd->allowed);
 			HFC_MEMCPY(&trc5->cmnd[0], cmnd->cmnd, 16);
-			HFC_4L_TO_4B(trc5->resid, cmnd->sdb.resid);
-			HFC_4L_TO_4B(trc5->serial_number, cmnd->serial_number);
+			/* kernel 5.x+: sdb.resid → resid_len; serial_number removed */
+			HFC_4L_TO_4B(trc5->resid, cmnd->resid_len);
+			HFC_4L_TO_4B(trc5->serial_number, 0);
 			HFC_4L_TO_4B(trc5->result, cmnd->result);
 			
 			sdev = cmnd->device;

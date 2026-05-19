@@ -7445,7 +7445,8 @@ void hfc_hand2_trace(
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30)		/* FCLNX-GPL-0343 */
 			HFC_4L_TO_4B(trc4->resid, cmnd->resid);
 #endif
-			ser_num = (uint)cmnd->serial_number;
+			/* kernel 5.15+: scsi_cmnd->serial_number removed; use 0 for trace */
+			ser_num = 0;
 			HFC_4L_TO_4B(trc4->serial_number, ser_num);
 		}
 		if( hfcp != NULL)

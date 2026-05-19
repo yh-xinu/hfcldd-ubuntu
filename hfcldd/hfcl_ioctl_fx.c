@@ -1141,31 +1141,20 @@ int hfc_fx_rtn_scsi_cmnd( struct scsi_cmnd *cmnd, void *arg, uint64_t *buffer, i
 	}
 	else {
 		/* No error */
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,30)		/* FCLNX-GPL-0343 */
-		if( cmnd->sdb.resid == cmnd->sdb.length ) {
-#else
-		if( cmnd->resid == cmnd->request_bufflen ) {
-#endif
+		/* kernel 5.x+: sdb.resid → resid_len */
+		if( cmnd->resid_len == cmnd->sdb.length ) {
 			/* There are no inquiry data */
 			rtn = EIO;
 		}
 		else {
 			/* Copy inquiry data */
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,30)		/* FCLNX-GPL-0343 */
-			if( cmnd->sdb.resid > 0 ) {
+			/* kernel 5.x+: sdb.resid → resid_len */
+			if( cmnd->resid_len > 0 ) {
 				wrk -> resid_flags = HFC_RESID_UNDERFLOW;
-				wrk -> resid	   = (ushort)cmnd->sdb.resid;
-#else
-			if( cmnd->resid > 0 ) {
-				wrk -> resid_flags = HFC_RESID_UNDERFLOW;
-				wrk -> resid       = (ushort) cmnd->resid;
-#endif
+				wrk -> resid	   = (ushort)cmnd->resid_len;
 			}
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,30)		/* FCLNX-GPL-0343 */
-			data_length = cmnd->sdb.length - cmnd->sdb.resid;
-#else
-			data_length = cmnd->request_bufflen - cmnd->resid;
-#endif
+			/* kernel 5.x+: sdb.resid → resid_len */
+			data_length = cmnd->sdb.length - cmnd->resid_len;
 			
 			if (type == TRUE) {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,30)		/* FCLNX-GPL-0343 */
@@ -1343,7 +1332,8 @@ int hfc_fx_inquiry( struct port_info *pp, void *arg ) {
 
 	cmnd->device->host = pp->hosts;
 
-	cmnd -> serial_number       = cnt;    cnt=(cnt+1)%MAX_CNT;
+	/* kernel 5.15+: scsi_cmnd->serial_number removed; field unused */
+	(void)cnt; cnt=(cnt+1)%MAX_CNT;
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,30)			/* FCLNX-GPL-0343 */
 	dev = (struct dev_info_fx *)hfc_fx_get_dev_info_fx(target, inquiry.lun_id);
 

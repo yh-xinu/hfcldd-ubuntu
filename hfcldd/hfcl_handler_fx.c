@@ -9419,7 +9419,8 @@ int hfc_fx_scsi_chk(
 			}
 
 		if (resid) {
-			Scmd->sdb.resid = resid;
+			/* kernel 5.x+: sdb.resid removed; use scsi_cmnd->resid_len */
+			Scmd->resid_len = resid;
 			hfcp->adap_status = SCS_DATA_UNDERRUN;
 			
 			if (!scsi_status) {

@@ -6004,7 +6004,8 @@ void hfc_stra_trc1( uchar	 *trc_wk,
 					pkt_time = (rq->rq_timeout/HZ);
 				}
 			}
-			HFC_4L_TO_4B(trc1->pkt_resid, cmnd->sdb.resid) ;	/* struct scsi_cmnd remainder byte */
+			/* kernel 5.x+: sdb.resid → resid_len */
+			HFC_4L_TO_4B(trc1->pkt_resid, cmnd->resid_len) ;	/* struct scsi_cmnd remainder byte */
 #else
 			pkt_time = cmnd->timeout_per_command/HZ;
 			HFC_4L_TO_4B(trc1->pkt_resid, cmnd->resid) ;	/* struct scsi_cmnd remainder byte */
@@ -6013,7 +6014,8 @@ void hfc_stra_trc1( uchar	 *trc_wk,
 
 
 //			HFC_4L_TO_4B(trc1->pkt_state, cmnd->state) ;	/* struct scsi_cmnd state */ /* FCLNX-0308 */
-			ser_num = (uint)cmnd->serial_number;
+			/* kernel 5.15+: scsi_cmnd->serial_number removed; use 0 for trace */
+			ser_num = 0;
 			HFC_4L_TO_4B(trc1->serial_number, ser_num) ;	/* struct scsi_cmnd serial_number */
 			HFC_4L_TO_4B(trc1->pkt_result, cmnd->result) ;	/* struct scsi_cmnd result */
 		}

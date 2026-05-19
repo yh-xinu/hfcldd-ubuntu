@@ -6111,8 +6111,9 @@ void hfc_fx_stra_trc1(
 		HFC_4L_TO_4B(trc1->retries, cmnd->retries);
 		HFC_4L_TO_4B(trc1->allowed, cmnd->allowed);
 		HFC_MEMCPY(&trc1->cmnd[0], cmnd->cmnd, 16);
-		HFC_4L_TO_4B(trc1->resid, cmnd->sdb.resid);
-		HFC_4L_TO_4B(trc1->serial_number, cmnd->serial_number);
+		/* kernel 5.x+: sdb.resid → resid_len; serial_number removed */
+		HFC_4L_TO_4B(trc1->resid, cmnd->resid_len);
+		HFC_4L_TO_4B(trc1->serial_number, 0);
 		HFC_4L_TO_4B(trc1->result, cmnd->result);
 		sdev = cmnd->device;
 		if( sdev != NULL ){
@@ -6215,8 +6216,9 @@ void hfc_fx_stra_trc2(
 		HFC_4L_TO_4B(trc2->retries, cmnd->retries);
 		HFC_4L_TO_4B(trc2->allowed, cmnd->allowed);
 		HFC_MEMCPY(&trc2->cmnd[0], cmnd->cmnd, 16);
-		HFC_4L_TO_4B(trc2->resid, cmnd->sdb.resid);
-		HFC_4L_TO_4B(trc2->serial_number, cmnd->serial_number);
+		/* kernel 5.x+: sdb.resid → resid_len; serial_number removed */
+		HFC_4L_TO_4B(trc2->resid, cmnd->resid_len);
+		HFC_4L_TO_4B(trc2->serial_number, 0);
 		HFC_4L_TO_4B(trc2->result, cmnd->result);
 		trc2->scsi_cmnd = (uchar)cmnd->cmnd[0];
 		HFC_2L_TO_2B(trc2->lun_id, CMND_LUN(cmnd));	/* FCLNX-GPL-FX-202 */
@@ -6318,8 +6320,9 @@ void hfc_fx_stra_trc3(
 		HFC_4L_TO_4B(trc3->retries, cmnd->retries);
 		HFC_4L_TO_4B(trc3->allowed, cmnd->allowed);
 		HFC_MEMCPY(&trc3->cmnd[0], cmnd->cmnd, 16);
-		HFC_4L_TO_4B(trc3->resid, cmnd->sdb.resid);
-		HFC_4L_TO_4B(trc3->serial_number, cmnd->serial_number);
+		/* kernel 5.x+: sdb.resid → resid_len; serial_number removed */
+		HFC_4L_TO_4B(trc3->resid, cmnd->resid_len);
+		HFC_4L_TO_4B(trc3->serial_number, 0);
 		HFC_4L_TO_4B(trc3->result, cmnd->result);
 		sdev = cmnd->device;
 		if( sdev != NULL ){
@@ -6420,8 +6423,9 @@ void hfc_fx_stra_trc4(
 		HFC_4L_TO_4B(trc4->retries, cmnd->retries);
 		HFC_4L_TO_4B(trc4->allowed, cmnd->allowed);
 		HFC_MEMCPY(&trc4->cmnd[0], cmnd->cmnd, 16);
-		HFC_4L_TO_4B(trc4->resid, cmnd->sdb.resid);
-		HFC_4L_TO_4B(trc4->serial_number, cmnd->serial_number);
+		/* kernel 5.x+: sdb.resid → resid_len; serial_number removed */
+		HFC_4L_TO_4B(trc4->resid, cmnd->resid_len);
+		HFC_4L_TO_4B(trc4->serial_number, 0);
 		HFC_4L_TO_4B(trc4->result, cmnd->result);
 		HFC_2L_TO_2B(trc4->lun_id, CMND_LUN(cmnd));	/* FCLNX-GPL-FX-202 */
 	}
