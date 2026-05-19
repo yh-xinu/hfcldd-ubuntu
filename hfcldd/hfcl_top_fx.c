@@ -3759,6 +3759,7 @@ int hfc_fx_issue_cancel_scsi( struct port_info *pp,
 				HFC_DBGPRT("hfcldd: hfc_fx_issue_cancel_scsi - target=NULL\n");
 				return(-1);
 			}
+			fallthrough;	/* kernel 6.x: suppress -Wimplicit-fallthrough */
 		case HFC_CANCEL_INEXUS		:
 			sid = ( uint )( pp -> scsi_id & 0x00ffffff );
 			id = (uchar)(sid >> 16 );
@@ -7752,11 +7753,7 @@ int hfc_fx_watchdog_enter(struct port_info *pp,
 		}
 		timer_setup(&w_timer->dog, hfc_fx_watchdog, 0);
 		
-		if(!(&w_timer->dog))
-		{        
-        	HFC_DBGPRT("watchdog_enter() - w_timer = NULL before init \n");
-			return (2);
-		}
+		/* kernel 6.x: &w_timer->dog always non-NULL (embedded struct); check removed */
 //		HFC_DBGPRT("watchdog_enter() - timer_id = %d d_time=%d\n",timer_id,d_time);
 		w_timer->pp = pp;
 		w_timer->ap_dev_minor = pp->dev_minor;					/* FCLNX-0322 */
@@ -7799,7 +7796,8 @@ int hfc_fx_watchdog_enter(struct port_info *pp,
 				if ( core == NULL )
 					return (3);		
 				w_timer = &core->core_mb_wdog;
-				if(!(&w_timer->dog)){
+				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
+
 				    hfc_fx_errlog(pp, core, NULL, NULL, HFC_ERRLOG_TYPE_MBINIT, ERRID_HFCP_EVNT3, 0xBB, NULL, 0) ;
 					return (2);
 				}
@@ -7807,7 +7805,8 @@ int hfc_fx_watchdog_enter(struct port_info *pp,
 
 			case HFC_FX_LINKINIT_TMR :		
 				w_timer = &pp->link_init_wdog;
-				if(!(&w_timer->dog)){
+				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
+
 				    hfc_fx_errlog(pp, NULL, NULL, NULL, HFC_ERRLOG_TYPE_MBINIT, ERRID_HFCP_EVNT3, 0xBB, NULL, 0) ;
 					return (2);
 				}
@@ -7816,14 +7815,16 @@ int hfc_fx_watchdog_enter(struct port_info *pp,
 			case HFC_FX_MB_RETRY_TMR :	
 				w_timer = &pp->mb_retry_wdog;
 				clear_bit(HFC_PD_MB_KEEP_RETRY, (ulong *)&pp->status_detail1);
-				if(!(&w_timer->dog)){
+				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
+
 					return (2);
 				}
 				break;
 
 			case HFC_FX_MB_DELAY_TMR :	
 				w_timer = &pp->mb_delay_wdog;
-				if(!(&w_timer->dog)){
+				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
+
 					return (2);
 				}
 				break;
@@ -7832,7 +7833,8 @@ int hfc_fx_watchdog_enter(struct port_info *pp,
 				if ( core == NULL )
 					return (3);		
 				w_timer = &core->mb_retry_intvl_wdog;
-				if(!(&w_timer->dog)){
+				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
+
 					return (2);
 				}
 				break;
@@ -7841,28 +7843,32 @@ int hfc_fx_watchdog_enter(struct port_info *pp,
 			case HFC_FX_REBOOT_DELAY_TMR :	
 			case HFC_FX_DIAG_DELAY_TMR :
 				w_timer = &pp->reboot_wdog;
-				if(!(&w_timer->dog)){
+				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
+
 					return (2);
 				}
 				break;
 
 			case HFC_FX_MCKINT_TMR :								/* FCLNX-0275 */
 				w_timer = &pp->mckint_wdog;
-				if(!(&w_timer->dog)){
+				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
+
 					return (2);
 				}
 				break;												/* FCLNX-0275 */
 
 			case HFC_FX_MLPF_FMCK_TMR :
 				w_timer = &pp->fmck_wdog;
-				if(!(&w_timer->dog)){
+				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
+
 					return (2);
 				}
 				break;
 
 			case HFC_FX_MLPF_FCSTP_TMR :
 				w_timer = &pp->fcstp_wdog;
-				if(!(&w_timer->dog)){
+				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
+
 					return (2);
 				}
 				break;
@@ -7870,28 +7876,32 @@ int hfc_fx_watchdog_enter(struct port_info *pp,
 			case HFC_FX_LINKUP_TMR	:
 			case HFC_FX_WLINKUP_MCK_TMR:							/* FCLNX-0241 */
 				w_timer = &pp->linkup_wdog;
-				if(!(&w_timer->dog)){
+				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
+
 					return (2);
 				}
 				break;
 
 			case HFC_FX_SCN_LINKUP_TMR	: 			
 				w_timer = &target->scnlinkup_wdog;
-				if(!(&w_timer->dog)){
+				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
+
 					return (2);
 				}
 				break;
 
 			case HFC_FX_WLINKUP_CNT_TMR	:							/* FCLNX-GPL-FX-424 */
 				w_timer = &pp->ld_err_wdog;
-				if(!(&w_timer->dog)){
+				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
+
 					return (2);
 				}
 				break;
 
 			case HFC_FX_DELAY_TMR :
 				w_timer = &target->delay_wdog;
-				if(!(&w_timer->dog)){
+				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
+
 					return (2);
 				}
 				break;
@@ -7900,7 +7910,8 @@ int hfc_fx_watchdog_enter(struct port_info *pp,
 				if ( core == NULL )
 					return (3);		
 				w_timer = &core->wexec_wdog;
-				if(!(&w_timer->dog)){
+				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
+
 					return (2);
 				}
 				break;
@@ -7911,7 +7922,8 @@ int hfc_fx_watchdog_enter(struct port_info *pp,
 				if ( hfcp == NULL )
 					return (3);		
 				w_timer = &hfcp->cmd_timeout;
-				if(!(&w_timer->dog)){
+				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
+
 					return (2);
 				}
 				break;
@@ -7922,7 +7934,8 @@ int hfc_fx_watchdog_enter(struct port_info *pp,
 				if ( hfcp == NULL )
 					return (3);	
 				w_timer = &hfcp->cmd_timeout;
-				if(!(&w_timer->dog)){
+				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
+
 					return (2);
 				}
 				break;
@@ -7931,7 +7944,8 @@ int hfc_fx_watchdog_enter(struct port_info *pp,
 				if ( hfcp == NULL )
 					return (3);
 				w_timer = &hfcp->cmd_timeout;
-				if(!(&w_timer->dog)){
+				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
+
 					return (2);
 				}
 				break;
@@ -7943,7 +7957,8 @@ int hfc_fx_watchdog_enter(struct port_info *pp,
 				if ( hfcp == NULL )
 					return (3);
 				w_timer = &hfcp->cmd_timeout;
-				if(!(&w_timer->dog)){
+				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
+
 					return (2);
 				}
 				break;
@@ -7952,7 +7967,8 @@ int hfc_fx_watchdog_enter(struct port_info *pp,
 				if ( target == NULL )
 				 	return (3);		
 				w_timer = &target->total_tgtrst_wdog;
-				if(!(&w_timer->dog)){
+				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
+
 					return (2);
 				}
 				break;
@@ -7961,28 +7977,32 @@ int hfc_fx_watchdog_enter(struct port_info *pp,
 														/* HFC_LOGIN_DELAY */
 			case HFC_FX_LOGIN_DELAY_TMR :				/* FCLNX-0243 */
 				w_timer = &pp->lgdelay_wdog;			/* FCLNX-0270 */
-				if(!(&w_timer->dog)){
+				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
+
 					return (2);
 				}
 				break;							/* FCLNX-0243 */
 
 			case HFC_FX_LDLERR_TMR:
 				w_timer = &pp->ldlerr_wdog;      /* FCLNX-0506 */
-				if(!(&w_timer->dog)){
+				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
+
 					return (2);
 				}
 				break;
 
 			case HFC_FX_LDSERR_TMR:
 				w_timer = &pp->ldserr_wdog; 	 /* FCLNX-0506 */
-				if(!(&w_timer->dog)){
+				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
+
 					return (2);
 				}
 				break;
 
 			case HFC_FX_IFERR_TMR:
 				w_timer = &pp->iferr_wdog;		/* FCLNX-0506 */
-				if(!(&w_timer->dog)){
+				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
+
 					return (2);
 				}
 				break;
@@ -7990,28 +8010,32 @@ int hfc_fx_watchdog_enter(struct port_info *pp,
 
 			case HFC_FX_TOERR_TMR:
 				w_timer = &pp->toerr_wdog;		/* FCLNX-0270 */
-				if(!(&w_timer->dog)){
+				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
+
 					return (2);
 				}
 				break;
 
 			case HFC_FX_INT_CHECK_TMR:			/* FCLNX-GPL-306 */
 				w_timer = &pp->int_chk_wdog;
-				if(!(&w_timer->dog)){
+				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
+
 					return (2);
 				}
 				break;
 
 			case HFC_FX_TGT_LDLERR_TMR:							/* FCLNX-GPL-327 */
 				w_timer = &target->tgt_ldlerr_wdog;
-				if(!(&w_timer->dog)){
+				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
+
 					return (2);
 				}
 				break;
 
 			case HFC_FX_TGT_LDSERR_TMR:							/* FCLNX-GPL-327 */
 				w_timer = &target->tgt_ldserr_wdog;
-				if(!(&w_timer->dog)){
+				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
+
 					return (2);
 				}
 				break;
@@ -8020,14 +8044,16 @@ int hfc_fx_watchdog_enter(struct port_info *pp,
 				if ( target == NULL )
 					return (3);		
 				w_timer = &target->restart_wdog;
-				if(!(&w_timer->dog)){
+				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
+
 					return (2);
 				}
 				break;	/* FCLNX-GPL-328 */
 
 			case HFC_FX_MLPF_ISOLEND_TMR :
 				w_timer = &pp->isolend_wdog;
-				if(!(&w_timer->dog)){
+				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
+
 					return (2);
 				}
 				break;
@@ -9054,10 +9080,7 @@ int hfc_fx_mp_watchdog_enter( struct port_info *pp, struct core_info *core, stru
 			default :
 								return (2);			/* Invalid TIMER ID		*/
 		}
-		if(!(&w_timer->dog))
-		{        
-        	 HFC_DBGPRT("watchdog_enter() - w_timer = NULL before init \n");
-		}
+		/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
 
 		w_timer->pp = pp;
 		w_timer->ap_dev_minor = pp->dev_minor;	/* FCLNX-GPL-FX-014 */
@@ -9082,7 +9105,8 @@ int hfc_fx_mp_watchdog_enter( struct port_info *pp, struct core_info *core, stru
 				w_timer = &dev->lun_delay_wdog;
 				if( (w_timer != NULL) && (w_timer->timer_flag & HFC_TIMER_VALID) )
 					return(3);						/* FCLNX-0648 */ /* FCLNX-0657 */
-				if(!(&w_timer->dog)){
+				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
+
 					break;
 				}
 				if (w_timer->timer_flag & HFC_TIMER_VALID) {	/* kernel 4.15+: use timer_flag */
@@ -9099,7 +9123,8 @@ int hfc_fx_mp_watchdog_enter( struct port_info *pp, struct core_info *core, stru
 				w_timer = &dev->total_abort_wdog;
 				if( (w_timer != NULL) && (w_timer->timer_flag & HFC_TIMER_VALID) )
 					return(3);						/* FCLNX-0648 */ /* FCLNX-0657 */
-				if(!(&w_timer->dog)){
+				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
+
 					break;
 				}
 				if (w_timer->timer_flag & HFC_TIMER_VALID) {	/* kernel 4.15+: use timer_flag */
@@ -9115,7 +9140,8 @@ int hfc_fx_mp_watchdog_enter( struct port_info *pp, struct core_info *core, stru
 				w_timer = &dev->path_retry_wdog;
 				if( (w_timer != NULL) && (w_timer->timer_flag & HFC_TIMER_VALID) )
 					return(3);						/* FCLNX-0648 */ /* FCLNX-0657 */
-				if(!(&w_timer->dog)){
+				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
+
 					break;
 				}
 				if (w_timer->timer_flag & HFC_TIMER_VALID) {	/* kernel 4.15+: use timer_flag */

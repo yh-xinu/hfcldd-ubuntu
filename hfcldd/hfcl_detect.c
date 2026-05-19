@@ -1337,7 +1337,7 @@ int hfc_free_dma(struct adap_info *ap)
 }
 
 
-void hfc_detach(struct adap_info *ap)
+static void hfc_detach(struct adap_info *ap)
 {
 	/* Release DMA memory area */
 	hfc_free_dma(ap);
@@ -1354,7 +1354,7 @@ void hfc_detach(struct adap_info *ap)
 	hfc_free_memory(ap, FALSE);
 }
 
-void hfc_set_fw_init_tbl(struct adap_info *ap)
+static void hfc_set_fw_init_tbl(struct adap_info *ap)
 {
 	int		i;
 	uchar			pre_conf=0, dd_support=(HFC_DDSP_OPTERR9E | HFC_PORTID_GUARD_CTL);		/* FCLNX-GPL-570 *//* FCLNX-GPL-FX-409*/
@@ -2307,7 +2307,7 @@ int hfc_query_pktype(struct adap_info *ap)
 }
 
 
-int hfc_release_adp(struct adap_info *ap)
+static int hfc_release_adp(struct adap_info *ap)
 {
 
 	uint				i;
@@ -7163,7 +7163,7 @@ void hfc_set_hg_stats_disable(struct adap_info *ap)
 
 /* FCLNX-GPL-547 start */
 /* Set a choice of log files  */
-void hfc_set_log_file(struct adap_info *ap)
+static void hfc_set_log_file(struct adap_info *ap)
 {
 	/* Set Default Parameter */
 	ap->log_file = 0;
@@ -7177,7 +7177,7 @@ void hfc_set_log_file(struct adap_info *ap)
 }
 
 /* Set max lu number */
-void hfc_set_max_lun(struct adap_info *ap)
+static void hfc_set_max_lun(struct adap_info *ap)
 {
 	/* Set Default Parameter */
 	ap->max_lun = HFC_MAX_LUN;
@@ -12962,6 +12962,8 @@ struct class_device_attribute *hfcldd_host_attrs_pfb[] = {
 /* >>> FCLNX-GPL-FX-481 */
 #endif
 
+/* forward declaration for DEF_SCSI_QCMD generated function */
+static int hfc_strategy_lck(struct scsi_cmnd *cmnd);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37)
 DEF_SCSI_QCMD(hfc_strategy)
 #endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37) */ /* FCLNX-GPL-564 */
@@ -13065,6 +13067,8 @@ static struct scsi_host_template hfcldd_driver_template_mp = {
 	/* .use_blk_tags removed in kernel 5.x+ */
 };		/* FCLNX-GPL-575 */
 
+/* forward declaration for DEF_SCSI_QCMD generated function */
+static int hfc_strategy_pfb_lck(struct scsi_cmnd *cmnd);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37)
 DEF_SCSI_QCMD(hfc_strategy_pfb)
 #endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37) */ /* FCLNX-GPL-564 */

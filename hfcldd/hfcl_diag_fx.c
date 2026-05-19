@@ -8,6 +8,9 @@ char diag_fx_rcsid[] = "$Id: hfcl_diag_fx.c,v 1.1.2.37.2.6.2.6.2.9 2015/08/05 11
 
 #include "hfcldd.h"
 #include "hfcl_detect.h"
+
+/* forward declaration to suppress -Wmissing-prototypes */
+int hfc_fx_diag(void *arg, struct port_info *pp);
 #include "hfcl_top.h"
 #include "hfcl_ioctl.h"
 #include "hfcl_timer_recovery.h"
@@ -652,7 +655,7 @@ ldch_error_exit:
  *  EIO        - Other errors
  * Notes:       
  */
-static int fx_meint_log(
+static __maybe_unused int fx_meint_log(
 	struct	port_info	*pp,	/* struct port_info */
 	struct	diag_ioctl	*diag)	/* struct diag_ioctl */
 {

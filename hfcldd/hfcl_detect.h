@@ -274,4 +274,6 @@ extern void hfc_fx_set_max_lun(struct port_info *pp);
 extern void hfc_fx_set_cpu_map(struct port_info *pp);			/* FCLNX-GPL-FX-420 */
 extern void hfc_fx_set_login_seq_retry_cnt(struct port_info *pp);	/* FCLNX-GPL-FX-446 */
 
+extern int hfc_proc_info(char *buffer, char **start, off_t offset, int length, int hostno, int inout);
+extern int hfc_get_adapter_port_no(struct adap_info *ap);
 #endif                          /* !INCLUDE_HFCDETECT */

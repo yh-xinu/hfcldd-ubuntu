@@ -8,6 +8,9 @@ char diag_rcsid[] = "$Id: hfcl_diag.c,v 1.32.2.10.2.3.4.3.6.10.4.15.2.9.6.10.2.4
 
 #include "hfcldd.h"
 #include "hfcl_detect.h"
+
+/* forward declaration to suppress -Wmissing-prototypes */
+int hfc_diag(void *arg, struct adap_info *ap);
 #include "hfcl_top.h"
 #include "hfcl_ioctl.h"
 #include "hfcl_timer_recovery.h"
@@ -179,7 +182,7 @@ struct logaddr_list {
  *  EIO        - Other errors
  * Notes:       
  */
-static int set_fw_trace_mode(
+static __maybe_unused int set_fw_trace_mode(
 	struct	adap_info	*ap,	/* struct adap_info */
 	struct	diag_ioctl	*diag)	/* struct diag_ioctl */
 {
@@ -576,7 +579,7 @@ int load_ch_trace_log(
  *  EIO        - Other errors
  * Notes:       
  */
-static int meint_log(
+static __maybe_unused int meint_log(
 	struct	adap_info	*ap,	/* struct adap_info */
 	struct	diag_ioctl	*diag)	/* struct diag_ioctl */
 {

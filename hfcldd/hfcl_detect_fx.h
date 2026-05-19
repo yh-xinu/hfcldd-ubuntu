@@ -171,4 +171,6 @@ extern void hfc_fx_mq_change_target_info(struct port_info *pp, struct target_inf
 extern void hfc_fx_mq_copy_iocinfo(struct port_info *pp);	/* FCLNX-GPL-FX-206 */
 extern void hfc_fx_calc_cpu_num(struct port_info *pp);	/* FCLNX-GPL-FX-201 */
 
+extern int hfc_fx_proc_info(char *buffer, char **start, off_t offset, int length, int hostno, int inout);
+extern int hfc_fx_get_adapter_port_no(struct port_info *pp);
 #endif                          /* !INCLUDE_HFCDETECT_FX */
