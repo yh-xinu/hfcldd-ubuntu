@@ -578,6 +578,7 @@ void hfc_login_resp(struct adap_info *ap)
 #endif
 #endif /* FCLNX-GPL-206 end */
 
+		fallthrough;	/* kernel 6.x: suppress -Wimplicit-fallthrough */
 	case SCS_NO_DEV_RESP :												/* FCWIN-0151 */
 	case SCS_CANCEL_RESP :
 		/* LOGIN failed */
@@ -3200,11 +3201,8 @@ void hfc_scsi_chk(
 //		}
 
 		if (resid) {												/* FCLNX-0257 */
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,30)		/* FCLNX-GPL-0343 */
-			Scmd->sdb.resid = resid;
-#else
-			Scmd->resid = resid;
-#endif
+			/* kernel 5.x+: sdb.resid removed; use scsi_cmnd->resid_len */
+			Scmd->resid_len = resid;
 			hfcp->adap_status = SCS_DATA_UNDERRUN;					/*--	FCWIN-0122		--*/
 			
 			if (!scsi_status) {										/* FCLNX-0429 */
