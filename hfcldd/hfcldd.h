@@ -99,6 +99,10 @@ typedef unsigned int	spinlock_t;
 typedef unsigned int	atomic_t;
 typedef unsigned int	irqreturn_t;
 
+#endif
+
+#ifdef __KERNEL__
+
 /* FCLNX-GPL-124 */
 /* kernel 4.8+: pci_enable_msix removed; use pci_alloc_irq_vectors.
  * We retain a local hfc_msix_entry struct for vector bookkeeping. */
@@ -106,11 +110,6 @@ struct hfc_msix_entry {
 	ushort  vector; /* assigned IRQ number */
 	ushort  entry;  /* logical entry index */
 };
-
-
-#endif
-
-#ifdef __KERNEL__
 
 #ifndef TRUE
 #define TRUE 1
