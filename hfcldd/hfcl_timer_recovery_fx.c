@@ -729,7 +729,8 @@ void hfc_fx_errlog( struct port_info *pp,
 		/* scsi type */
 		if( hfcp->cmd_pkt != NULL ){
 			memcpy(&(err1->err_detail_2.uni.scsi.cmnd[0]), hfcp->cmd_pkt->cmnd, 16) ;
-			HFC_4L_TO_4B(err1->err_detail_2.uni.scsi.serial_number, hfcp->cmd_pkt->serial_number);
+			/* kernel 5.15+: scsi_cmnd->serial_number removed; use 0 for trace */
+			HFC_4L_TO_4B(err1->err_detail_2.uni.scsi.serial_number, 0);
 			HFC_4L_TO_4B(err1->err_detail_2.uni.scsi.retries, hfcp->cmd_pkt->retries);
 			HFC_4L_TO_4B(err1->err_detail_2.uni.scsi.allowed, hfcp->cmd_pkt->allowed);
 			sdev = hfcp->cmd_pkt->device;
