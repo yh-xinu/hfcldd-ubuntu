@@ -1,0 +1,30 @@
+#! /bin/sh
+# preinst script for hfcldd
+
+ENASVERDIR=
+
+set -e
+
+case "$1" in
+    install|upgrade)
+
+    if [ -e /lib/modules/${ENASVERDIR} ]; then
+	exit 0
+    else
+
+        echo "This driver package was made for Linux ${ENASVERDIR}."
+        exit 1
+    fi  
+
+    ;;
+
+    abort-upgrade)
+    ;;
+
+    *)
+        echo "preinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+exit 0

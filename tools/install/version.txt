@@ -1,0 +1,7 @@
++--------------------------------------------------------------------------------+
++- Hitachi Gigabit Fibre Channel Adapter Driver for Linux                       -+
++-  All Rights Reserved, Copyright (C), 2016, Hitachi, Ltd.                     -+
++--------------------------------------------------------------------------------+
+
+Supported Linux Distributions and kernel versions,
+

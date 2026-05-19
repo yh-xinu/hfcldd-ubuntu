@@ -1,0 +1,47 @@
+#!/bin/sh
+# postinst script for hfcldd-tools
+
+set -e
+
+ENASVERDIR=
+DRIVERDIR="/lib/modules/${ENASVERDIR}/kernel/drivers/scsi"
+MODCONF="/etc/modprobe.d/hfcldd"
+HFCCONF="/etc/hfcldd.conf"
+TOOLPATH="/opt/hitachi/drivers/hba"
+INSTLOG="/tmp/hfcldd_install.log"
+MODCONG="hfcldd_conf"
+BOOTDIR="boot"
+case "$1" in
+    configure)
+	echo "      Boot directory      : $BOOTDIR"    >> $INSTLOG
+	echo "      Configulation file  : $MODCONG"    >> $INSTLOG
+	echo "      Kernel version      : $ENASVERDIR"    >> $INSTLOG
+	echo "      Host Type           : `uname -m`"  >> $INSTLOG
+	echo " ---- Install  @Hitachi Fibre Channel Adapter Driver - `date`" >> $INSTLOG
+	chmod -f 644  ${DRIVERDIR}/hfcldd_conf.ko
+	chown -f root ${DRIVERDIR}/hfcldd_conf.ko
+	chgrp -f root ${DRIVERDIR}/hfcldd_conf.ko
+	chmod -f 644  ${DRIVERDIR}/hfcldd.ko
+	chown -f root ${DRIVERDIR}/hfcldd.ko
+	chgrp -f root ${DRIVERDIR}/hfcldd.ko
+	chmod -f 644  ${TOOLPATH}/version_hfcldd.txt
+	chown -f root ${TOOLPATH}/version_hfcldd.txt
+	chgrp -f root ${TOOLPATH}/version_hfcldd.txt
+	depmod -a $ENASVERDIR
+        cp /boot/initrd.img-$ENASVERDIR /boot/initrd.img-$ENASVERDIR.backup
+        mkinitramfs -o /boot/initrd.img-$ENASVERDIR $ENASVERDIR
+         
+        echo " ---- Install Success "   >> $INSTLOG
+	exit 0
+
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+
+    ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
