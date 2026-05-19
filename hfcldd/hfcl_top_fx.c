@@ -140,10 +140,14 @@ void hfc_fx_copy_master_to_slave( struct port_info *pp, struct core_info *core )
 		core_tmp = pp->region_arg[pp->rid]->core_arg[i];
 		if( core_tmp != NULL ){
 			if( core_tmp->core_no != core->core_no ){
+				/* kernel 6.x: fortify-source field-boundary warning suppression (firmware struct bulk copy) */
+				#pragma GCC diagnostic push
+				#pragma GCC diagnostic ignored "-Wattribute-warning"
 				memcpy( &core_tmp->fw_init_p->fw_iocinfo.connect_type, &core->fw_init_p->fw_iocinfo.connect_type, 64);
 				memcpy( core_tmp->fw_init_p->pos_map, core->fw_init_p->pos_map, 160);
 				memcpy( core_tmp->fw_init_p->active_alpa, core->fw_init_p->active_alpa, 32);
 				memcpy( &core_tmp->fw_init_p->sfp_info.sfp_status, &core->fw_init_p->sfp_info.sfp_status, 0x40); /* FCLNX-GPL-FX-149 */
+				#pragma GCC diagnostic pop
 			}
 		}
 	}
@@ -5241,7 +5245,7 @@ int hfc_fx_make_prli( struct port_info *pp, struct core_info *core, struct targe
 		return -1;
 	}
 
-	memset( &core -> payload->send_payload, 0, (uint)HFC_SEND_PAYLOADL_MAX+HFC_RECV_PAYLOADL_MAX );
+	memset( core -> payload, 0, (uint)HFC_SEND_PAYLOADL_MAX+HFC_RECV_PAYLOADL_MAX );	/* kernel 6.x fortify: use struct ptr */
 	/* Setup Valid Length of Mailbox Send_Payload  */
 	hfc_fx_write_val( mb -> mb_init.type.frmsndrcv.payload_length, HFC_PRLI_SLENGTH);
 	hfc_fx_write_val( mb -> mb_init.timer, mb_timer->tout-1 ); 
@@ -5365,7 +5369,7 @@ int hfc_fx_make_prlo( struct port_info *pp, struct core_info *core )
 	}
 	
 	hfc_fx_write_val( mb -> mb_init.timer, mb_timer->tout-1 ); 
-	memset( &core -> payload->send_payload, 0, (uint)HFC_SEND_PAYLOADL_MAX+HFC_RECV_PAYLOADL_MAX );
+	memset( core -> payload, 0, (uint)HFC_SEND_PAYLOADL_MAX+HFC_RECV_PAYLOADL_MAX );	/* kernel 6.x fortify: use struct ptr */
 	/* Setup Valid Length of Mailbox Send_Payload  */
 	hfc_fx_write_val( mb -> mb_init.type.frmsndrcv.payload_length, HFC_PRLO_SLENGTH);
 
@@ -5482,7 +5486,7 @@ int hfc_fx_make_scr( struct port_info *pp, struct core_info *core )
 	id = (uchar)did;
 	hfc_fx_write_val( mb -> mb_init.type.frmsndrcv.fcph_hdr.d_id[2], id);
 
-	memset( &core -> payload->send_payload, 0, (uint)HFC_SEND_PAYLOADL_MAX+HFC_RECV_PAYLOADL_MAX );
+	memset( core -> payload, 0, (uint)HFC_SEND_PAYLOADL_MAX+HFC_RECV_PAYLOADL_MAX );	/* kernel 6.x fortify: use struct ptr */
 	/* Setup Valid Length of Mailbox Send_Payload  */
 	hfc_fx_write_val( mb -> mb_init.type.frmsndrcv.payload_length, HFC_SCR_SLENGTH);
 	hfc_fx_write_val( mb -> mb_init.type.frmsndrcv.fc_class, HFC_FC_CLASS2);
@@ -5587,7 +5591,7 @@ int hfc_fx_make_logo( struct port_info *pp, struct core_info *core, struct targe
 		return -1;
 	}
 
-	memset( &core -> payload->send_payload, 0, (uint)HFC_SEND_PAYLOADL_MAX+HFC_RECV_PAYLOADL_MAX );
+	memset( core -> payload, 0, (uint)HFC_SEND_PAYLOADL_MAX+HFC_RECV_PAYLOADL_MAX );	/* kernel 6.x fortify: use struct ptr */
 	/* Setup Valid Length of Mailbox Send_Payload  */
 	hfc_fx_write_val( mb -> mb_init.type.frmsndrcv.payload_length, HFC_LOGO_SLENGTH);
 
@@ -5730,7 +5734,7 @@ int hfc_fx_make_gcs_id( struct port_info *pp, struct core_info *core )
 		return -1;
 	}
 
-	memset( &core -> payload->send_payload, 0, (uint)HFC_SEND_PAYLOADL_MAX+HFC_RECV_PAYLOADL_MAX );
+	memset( core -> payload, 0, (uint)HFC_SEND_PAYLOADL_MAX+HFC_RECV_PAYLOADL_MAX );	/* kernel 6.x fortify: use struct ptr */
 	/* Setup Valid Length of Mailbox Send_Payload  */
 	hfc_fx_write_val( mb -> mb_init.type.frmsndrcv.payload_length, HFC_GCSID_SLENGTH);
 	hfc_fx_write_val( mb -> mb_init.type.frmsndrcv.fc_class, HFC_FC_CLASS2);	/* FCLNX-GPL-FX-037 */
@@ -5839,7 +5843,7 @@ int hfc_fx_make_gid_pn( struct port_info *pp, struct core_info *core, struct tar
 	
 	pp->mailbox_pseq = target -> pseq;
 
-	memset( &core -> payload->send_payload, 0, (uint)HFC_SEND_PAYLOADL_MAX+HFC_RECV_PAYLOADL_MAX );
+	memset( core -> payload, 0, (uint)HFC_SEND_PAYLOADL_MAX+HFC_RECV_PAYLOADL_MAX );	/* kernel 6.x fortify: use struct ptr */
 	/* Setup Valid Length of Mailbox Send_Payload  */
 	hfc_fx_write_val( mb -> mb_init.type.frmsndrcv.payload_length, HFC_GIDPN_SLENGTH);
 	
@@ -5955,7 +5959,7 @@ int hfc_fx_make_gpn_id( struct port_info *pp, struct core_info *core, uint scsi_
 		return -1;
 	}
 
-	memset( &core -> payload->send_payload, 0, (uint)HFC_SEND_PAYLOADL_MAX+HFC_RECV_PAYLOADL_MAX );
+	memset( core -> payload, 0, (uint)HFC_SEND_PAYLOADL_MAX+HFC_RECV_PAYLOADL_MAX );	/* kernel 6.x fortify: use struct ptr */
 	
 	hfc_fx_write_val( mb -> mb_init.mb_code, HFC_MBCMD_SNDRCV_GIDFT );
 	/* Setup Valid Length of Mailbox Send_Payload  */
@@ -6073,7 +6077,7 @@ int hfc_fx_make_gid_ft( struct port_info *pp, struct core_info *core )
 		return -1;
 	}
 
-	memset( &core -> payload->send_payload, 0, (uint)HFC_SEND_PAYLOADL_MAX+HFC_RECV_PAYLOADL_MAX );
+	memset( core -> payload, 0, (uint)HFC_SEND_PAYLOADL_MAX+HFC_RECV_PAYLOADL_MAX );	/* kernel 6.x fortify: use struct ptr */
 	set_bit(HFC_PD_WAIT_GPNFT, (ulong *)&pp->status_detail2);
 	clear_bit(HFC_PD_NEED_GPNFT, (ulong *)&pp->status_detail2);
 	
@@ -6210,7 +6214,7 @@ int hfc_fx_make_rft_id( struct port_info *pp, struct core_info *core )
 
 	hfc_fx_write_val( mb -> mb_init.type.frmsndrcv.vft_hdr.exrctl, 0x50);	/* FCLNX-GPL-FX-222 */
 
-	memset( &core -> payload->send_payload, 0, (uint)HFC_SEND_PAYLOADL_MAX+HFC_RECV_PAYLOADL_MAX );
+	memset( core -> payload, 0, (uint)HFC_SEND_PAYLOADL_MAX+HFC_RECV_PAYLOADL_MAX );	/* kernel 6.x fortify: use struct ptr */
 	/* Setup Valid Length of Mailbox Send_Payload  */
 	hfc_fx_write_val( mb -> mb_init.type.frmsndrcv.payload_length, HFC_RFTID_SLENGTH);
 	hfc_fx_write_val( mb -> mb_init.timer, mb_timer->tout-1 ); 
@@ -6322,7 +6326,7 @@ int hfc_fx_make_rff_id( struct port_info *pp, struct core_info *core )
 		return -1;
 	}
 
-	memset( &core -> payload->send_payload, 0, (uint)HFC_SEND_PAYLOADL_MAX+HFC_RECV_PAYLOADL_MAX );
+	memset( core -> payload, 0, (uint)HFC_SEND_PAYLOADL_MAX+HFC_RECV_PAYLOADL_MAX );	/* kernel 6.x fortify: use struct ptr */
 	/* Setup Valid Length of Mailbox Send_Payload  */
 	hfc_fx_write_val( mb -> mb_init.type.frmsndrcv.payload_length, HFC_RFFID_SLENGTH);
 
@@ -6447,7 +6451,7 @@ int hfc_fx_make_gpn_ft( struct port_info *pp, struct core_info *core )
 		return -1;
 	}
 	
-	memset( &core -> payload->send_payload, 0, (uint)HFC_SEND_PAYLOADL_MAX+HFC_RECV_PAYLOADL_MAX );
+	memset( core -> payload, 0, (uint)HFC_SEND_PAYLOADL_MAX+HFC_RECV_PAYLOADL_MAX );	/* kernel 6.x fortify: use struct ptr */
 	set_bit(HFC_PD_WAIT_GPNFT, (ulong *)&pp->status_detail2);
 	clear_bit(HFC_PD_NEED_GPNFT, (ulong *)&pp->status_detail2);
 	
