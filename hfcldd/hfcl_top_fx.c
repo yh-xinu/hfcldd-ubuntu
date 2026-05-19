@@ -7797,36 +7797,22 @@ int hfc_fx_watchdog_enter(struct port_info *pp,
 					return (3);		
 				w_timer = &core->core_mb_wdog;
 				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
-
-				    hfc_fx_errlog(pp, core, NULL, NULL, HFC_ERRLOG_TYPE_MBINIT, ERRID_HFCP_EVNT3, 0xBB, NULL, 0) ;
-					return (2);
-				}
 				break;
 
 			case HFC_FX_LINKINIT_TMR :		
 				w_timer = &pp->link_init_wdog;
 				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
-
-				    hfc_fx_errlog(pp, NULL, NULL, NULL, HFC_ERRLOG_TYPE_MBINIT, ERRID_HFCP_EVNT3, 0xBB, NULL, 0) ;
-					return (2);
-				}
 				break;
 
 			case HFC_FX_MB_RETRY_TMR :	
 				w_timer = &pp->mb_retry_wdog;
 				clear_bit(HFC_PD_MB_KEEP_RETRY, (ulong *)&pp->status_detail1);
 				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
-
-					return (2);
-				}
 				break;
 
 			case HFC_FX_MB_DELAY_TMR :	
 				w_timer = &pp->mb_delay_wdog;
 				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
-
-					return (2);
-				}
 				break;
 
 			case HFC_FX_MB_RETRY_DELAY_TMR :	
@@ -7834,9 +7820,6 @@ int hfc_fx_watchdog_enter(struct port_info *pp,
 					return (3);		
 				w_timer = &core->mb_retry_intvl_wdog;
 				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
-
-					return (2);
-				}
 				break;
 
 			case HFC_FX_CTLRST_DELAY_TMR : 							/* FCLNX-0279 */
@@ -7844,66 +7827,42 @@ int hfc_fx_watchdog_enter(struct port_info *pp,
 			case HFC_FX_DIAG_DELAY_TMR :
 				w_timer = &pp->reboot_wdog;
 				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
-
-					return (2);
-				}
 				break;
 
 			case HFC_FX_MCKINT_TMR :								/* FCLNX-0275 */
 				w_timer = &pp->mckint_wdog;
 				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
-
-					return (2);
-				}
 				break;												/* FCLNX-0275 */
 
 			case HFC_FX_MLPF_FMCK_TMR :
 				w_timer = &pp->fmck_wdog;
 				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
-
-					return (2);
-				}
 				break;
 
 			case HFC_FX_MLPF_FCSTP_TMR :
 				w_timer = &pp->fcstp_wdog;
 				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
-
-					return (2);
-				}
 				break;
 
 			case HFC_FX_LINKUP_TMR	:
 			case HFC_FX_WLINKUP_MCK_TMR:							/* FCLNX-0241 */
 				w_timer = &pp->linkup_wdog;
 				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
-
-					return (2);
-				}
 				break;
 
 			case HFC_FX_SCN_LINKUP_TMR	: 			
 				w_timer = &target->scnlinkup_wdog;
 				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
-
-					return (2);
-				}
 				break;
 
 			case HFC_FX_WLINKUP_CNT_TMR	:							/* FCLNX-GPL-FX-424 */
 				w_timer = &pp->ld_err_wdog;
 				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
-
-					return (2);
-				}
 				break;
 
 			case HFC_FX_DELAY_TMR :
 				w_timer = &target->delay_wdog;
 				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
-
-					return (2);
-				}
 				break;
 
 			case HFC_FX_WEXEC_TMR :
@@ -7911,9 +7870,6 @@ int hfc_fx_watchdog_enter(struct port_info *pp,
 					return (3);		
 				w_timer = &core->wexec_wdog;
 				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
-
-					return (2);
-				}
 				break;
 
 			case HFC_FX_TARGET_RST_TMR :
@@ -7923,9 +7879,6 @@ int hfc_fx_watchdog_enter(struct port_info *pp,
 					return (3);		
 				w_timer = &hfcp->cmd_timeout;
 				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
-
-					return (2);
-				}
 				break;
 
 			case HFC_FX_ABORT_TMR :
@@ -7935,9 +7888,6 @@ int hfc_fx_watchdog_enter(struct port_info *pp,
 					return (3);	
 				w_timer = &hfcp->cmd_timeout;
 				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
-
-					return (2);
-				}
 				break;
 
 			case HFC_FX_SCSI_CMD_TMR :
@@ -7945,9 +7895,6 @@ int hfc_fx_watchdog_enter(struct port_info *pp,
 					return (3);
 				w_timer = &hfcp->cmd_timeout;
 				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
-
-					return (2);
-				}
 				break;
 
 			/* FCLNX-GPL-FX-014 Start */
@@ -7958,9 +7905,6 @@ int hfc_fx_watchdog_enter(struct port_info *pp,
 					return (3);
 				w_timer = &hfcp->cmd_timeout;
 				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
-
-					return (2);
-				}
 				break;
 
 			case HFC_FX_TOTAL_TGTRST_TMR	:
@@ -7968,9 +7912,6 @@ int hfc_fx_watchdog_enter(struct port_info *pp,
 				 	return (3);		
 				w_timer = &target->total_tgtrst_wdog;
 				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
-
-					return (2);
-				}
 				break;
 			/* FCLNX-GPL-FX-014 End */
 
@@ -7978,66 +7919,42 @@ int hfc_fx_watchdog_enter(struct port_info *pp,
 			case HFC_FX_LOGIN_DELAY_TMR :				/* FCLNX-0243 */
 				w_timer = &pp->lgdelay_wdog;			/* FCLNX-0270 */
 				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
-
-					return (2);
-				}
 				break;							/* FCLNX-0243 */
 
 			case HFC_FX_LDLERR_TMR:
 				w_timer = &pp->ldlerr_wdog;      /* FCLNX-0506 */
 				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
-
-					return (2);
-				}
 				break;
 
 			case HFC_FX_LDSERR_TMR:
 				w_timer = &pp->ldserr_wdog; 	 /* FCLNX-0506 */
 				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
-
-					return (2);
-				}
 				break;
 
 			case HFC_FX_IFERR_TMR:
 				w_timer = &pp->iferr_wdog;		/* FCLNX-0506 */
 				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
-
-					return (2);
-				}
 				break;
 
 
 			case HFC_FX_TOERR_TMR:
 				w_timer = &pp->toerr_wdog;		/* FCLNX-0270 */
 				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
-
-					return (2);
-				}
 				break;
 
 			case HFC_FX_INT_CHECK_TMR:			/* FCLNX-GPL-306 */
 				w_timer = &pp->int_chk_wdog;
 				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
-
-					return (2);
-				}
 				break;
 
 			case HFC_FX_TGT_LDLERR_TMR:							/* FCLNX-GPL-327 */
 				w_timer = &target->tgt_ldlerr_wdog;
 				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
-
-					return (2);
-				}
 				break;
 
 			case HFC_FX_TGT_LDSERR_TMR:							/* FCLNX-GPL-327 */
 				w_timer = &target->tgt_ldserr_wdog;
 				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
-
-					return (2);
-				}
 				break;
 
 			case HFC_FX_RESTART_TMR:		/* FCLNX-GPL-328 */
@@ -8045,17 +7962,11 @@ int hfc_fx_watchdog_enter(struct port_info *pp,
 					return (3);		
 				w_timer = &target->restart_wdog;
 				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
-
-					return (2);
-				}
 				break;	/* FCLNX-GPL-328 */
 
 			case HFC_FX_MLPF_ISOLEND_TMR :
 				w_timer = &pp->isolend_wdog;
 				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
-
-					return (2);
-				}
 				break;
 
 			default :
@@ -9106,9 +9017,6 @@ int hfc_fx_mp_watchdog_enter( struct port_info *pp, struct core_info *core, stru
 				if( (w_timer != NULL) && (w_timer->timer_flag & HFC_TIMER_VALID) )
 					return(3);						/* FCLNX-0648 */ /* FCLNX-0657 */
 				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
-
-					break;
-				}
 				if (w_timer->timer_flag & HFC_TIMER_VALID) {	/* kernel 4.15+: use timer_flag */
 					del_timer(&w_timer->dog);
 		/* kernel 4.15+: timer_list.data removed */
@@ -9124,9 +9032,6 @@ int hfc_fx_mp_watchdog_enter( struct port_info *pp, struct core_info *core, stru
 				if( (w_timer != NULL) && (w_timer->timer_flag & HFC_TIMER_VALID) )
 					return(3);						/* FCLNX-0648 */ /* FCLNX-0657 */
 				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
-
-					break;
-				}
 				if (w_timer->timer_flag & HFC_TIMER_VALID) {	/* kernel 4.15+: use timer_flag */
 					del_timer(&w_timer->dog);
 		/* kernel 4.15+: timer_list.data removed */
@@ -9141,9 +9046,6 @@ int hfc_fx_mp_watchdog_enter( struct port_info *pp, struct core_info *core, stru
 				if( (w_timer != NULL) && (w_timer->timer_flag & HFC_TIMER_VALID) )
 					return(3);						/* FCLNX-0648 */ /* FCLNX-0657 */
 				/* kernel 6.x: &w_timer->dog always non-NULL; check removed */
-
-					break;
-				}
 				if (w_timer->timer_flag & HFC_TIMER_VALID) {	/* kernel 4.15+: use timer_flag */
 					del_timer(&w_timer->dog);
 		/* kernel 4.15+: timer_list.data removed */

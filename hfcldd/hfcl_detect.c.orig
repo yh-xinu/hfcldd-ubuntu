@@ -12610,7 +12610,7 @@ static ssize_t hfc_cpu_affinity_store(struct device *dev, struct device_attribut
 {
 	struct cpuinfo_x86 	*cpuinfo=NULL;
 	struct hfc_intr_entry *entry = NULL;
-	cpumask_var_t mask;			/* kernel 6.x: off-stack to reduce frame size */
+	struct cpumask mask;
 	uint32_t			cpu;
 	int selected_irq = 0;
 	int err;
@@ -12639,13 +12639,11 @@ static ssize_t hfc_cpu_affinity_store(struct device *dev, struct device_attribut
     		return -EINVAL;
     	}
 
-    	if (!zalloc_cpumask_var(&mask, GFP_KERNEL))
-    		return -ENOMEM;
+		memset(&mask, 0, sizeof(struct cpumask));
 
     	/* kernel 6.x: __bitmap_parse removed; use bitmap_parse */
-    	err = bitmap_parse(buf, PAGE_SIZE, cpumask_bits(mask), nr_cpumask_bits);
+    	err = bitmap_parse(buf, PAGE_SIZE, mask.bits, nr_cpumask_bits);
     	if(err != 0){
-    		free_cpumask_var(mask);
     		return err;
     	}
 
@@ -12653,11 +12651,10 @@ static ssize_t hfc_cpu_affinity_store(struct device *dev, struct device_attribut
 
     	for_each_present_cpu(cpu) {
 			cpuinfo = &cpu_data(cpu);
-			if(!cpumask_test_cpu(cpu, mask)) { continue; }
+			if(!cpumask_test_cpu(cpu, &mask)) { continue; }
 	  	 		cpumask_set_cpu(cpu, &entry->affinity);
    		}
 
-    	free_cpumask_var(mask);
 		return strlen(buf);
 	}
 	
