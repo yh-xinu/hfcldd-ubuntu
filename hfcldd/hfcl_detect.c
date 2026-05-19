@@ -12963,7 +12963,7 @@ struct class_device_attribute *hfcldd_host_attrs_pfb[] = {
 #endif
 
 /* forward declaration for DEF_SCSI_QCMD generated function */
-static int hfc_strategy_lck(struct scsi_cmnd *cmnd);
+int hfc_strategy(struct Scsi_Host *shost, struct scsi_cmnd *cmd);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37)
 DEF_SCSI_QCMD(hfc_strategy)
 #endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37) */ /* FCLNX-GPL-564 */
@@ -13068,7 +13068,7 @@ static struct scsi_host_template hfcldd_driver_template_mp = {
 };		/* FCLNX-GPL-575 */
 
 /* forward declaration for DEF_SCSI_QCMD generated function */
-static int hfc_strategy_pfb_lck(struct scsi_cmnd *cmnd);
+int hfc_strategy_pfb(struct Scsi_Host *shost, struct scsi_cmnd *cmd);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37)
 DEF_SCSI_QCMD(hfc_strategy_pfb)
 #endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37) */ /* FCLNX-GPL-564 */
