@@ -742,14 +742,19 @@ void hfc_fx_errlog( struct port_info *pp,
 			HFC_4L_TO_4B(err1->err_detail_2.uni.scsi.rq_tmo_sec, wk_tmo_sec);
 			
 			wk_tmo_sec = 0;
-			if( hfcp->cmd_pkt->request != NULL ){
-				wk_tmo_sec = (hfcp->cmd_pkt->request->timeout/HZ);
+			/* kernel 5.16+: cmnd->request removed; use scsi_cmd_to_rq() */
+			{
+				struct request *_rq = scsi_cmd_to_rq(hfcp->cmd_pkt);
+				if (_rq != NULL)
+					wk_tmo_sec = (_rq->timeout/HZ);
 			}
 			HFC_4L_TO_4B(err1->err_detail_2.uni.scsi.req_tmo_sec, wk_tmo_sec);
 			
 			HFC_4L_TO_4B(err1->err_detail_2.uni.scsi.result, hfcp->cmd_pkt->result);
 			err1->err_detail_2.uni.scsi.cmd_len = hfcp->cmd_pkt->cmd_len;
-			err1->err_detail_2.uni.scsi.tag = hfcp->cmd_pkt->tag;
+			/* kernel 5.4+: cmnd->tag removed; use scsi_cmd_to_rq()->tag */
+			err1->err_detail_2.uni.scsi.tag =
+				(uchar)scsi_cmd_to_rq(hfcp->cmd_pkt)->tag;
 		}
 		
 		err1->err_detail_2.uni.scsi.core_no = hfcp->core_no;

@@ -811,8 +811,11 @@ void hfc_errlog( struct adap_info *ap,
 			HFC_2L_TO_2B(err1->err_detail_2.uni.scsi.rq_tmo_sec, wk_tmo_sec);
 			
 			wk_tmo_sec = 0;
-			if( hfcp->cmd_pkt->request != NULL ){
-				wk_tmo_sec = (ushort)(hfcp->cmd_pkt->request->timeout/HZ);
+			/* kernel 5.16+: cmnd->request removed; use scsi_cmd_to_rq() */
+			{
+				struct request *_rq = scsi_cmd_to_rq(hfcp->cmd_pkt);
+				if (_rq != NULL)
+					wk_tmo_sec = (ushort)(_rq->timeout/HZ);
 			}
 			HFC_2L_TO_2B(err1->err_detail_2.uni.scsi.req_tmo_sec, wk_tmo_sec);	/* FCLNX-GPL-621 */
 			
@@ -829,7 +832,9 @@ void hfc_errlog( struct adap_info *ap,
 #endif
 			HFC_4L_TO_4B(err1->err_detail_2.uni.scsi.result, hfcp->cmd_pkt->result);
 			err1->err_detail_2.uni.scsi.cmd_len = hfcp->cmd_pkt->cmd_len;
-			err1->err_detail_2.uni.scsi.tag = hfcp->cmd_pkt->tag;
+			/* kernel 5.4+: cmnd->tag removed; use scsi_cmd_to_rq()->tag */
+			err1->err_detail_2.uni.scsi.tag =
+				(uchar)scsi_cmd_to_rq(hfcp->cmd_pkt)->tag;
 		}
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30)
@@ -5484,6 +5489,7 @@ void hfc_watchdog(struct wtimer *w_timer)
 					clear_bit(HFC_WAIT_ISOL_REC, (ulong *)&ap->wait_isol);
 				}														/* FCLNX-GPL-393 */
 			}
+			fallthrough;	/* kernel 6.x: suppress -Wimplicit-fallthrough */
 		case HFC_MB_TMR:			/* Other MailBox Time-Out			*/
 			if( test_bit(HFC_MB_PROL, (ulong *)&ap->mb_status ) )
 			{
