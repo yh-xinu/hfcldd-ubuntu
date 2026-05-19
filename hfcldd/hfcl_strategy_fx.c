@@ -6107,7 +6107,7 @@ void hfc_fx_stra_trc1(
 		HFC_MEMCPY(&trc1->cmnd[0], cmnd->cmnd, 16);
 		/* kernel 5.x+: sdb.resid → resid_len; serial_number removed */
 		HFC_4L_TO_4B(trc1->resid, cmnd->resid_len);
-		HFC_4L_TO_4B(trc1->serial_number, 0);
+		trc1->serial_number = 0;	/* 0 is endian-neutral; direct assign replaces HFC_4L_TO_4B(,0) */
 		HFC_4L_TO_4B(trc1->result, cmnd->result);
 		sdev = cmnd->device;
 		if( sdev != NULL ){
@@ -6212,7 +6212,7 @@ void hfc_fx_stra_trc2(
 		HFC_MEMCPY(&trc2->cmnd[0], cmnd->cmnd, 16);
 		/* kernel 5.x+: sdb.resid → resid_len; serial_number removed */
 		HFC_4L_TO_4B(trc2->resid, cmnd->resid_len);
-		HFC_4L_TO_4B(trc2->serial_number, 0);
+		trc2->serial_number = 0;	/* 0 is endian-neutral */
 		HFC_4L_TO_4B(trc2->result, cmnd->result);
 		trc2->scsi_cmnd = (uchar)cmnd->cmnd[0];
 		HFC_2L_TO_2B(trc2->lun_id, CMND_LUN(cmnd));	/* FCLNX-GPL-FX-202 */
@@ -6316,7 +6316,7 @@ void hfc_fx_stra_trc3(
 		HFC_MEMCPY(&trc3->cmnd[0], cmnd->cmnd, 16);
 		/* kernel 5.x+: sdb.resid → resid_len; serial_number removed */
 		HFC_4L_TO_4B(trc3->resid, cmnd->resid_len);
-		HFC_4L_TO_4B(trc3->serial_number, 0);
+		trc3->serial_number = 0;	/* 0 is endian-neutral */
 		HFC_4L_TO_4B(trc3->result, cmnd->result);
 		sdev = cmnd->device;
 		if( sdev != NULL ){
@@ -6419,7 +6419,7 @@ void hfc_fx_stra_trc4(
 		HFC_MEMCPY(&trc4->cmnd[0], cmnd->cmnd, 16);
 		/* kernel 5.x+: sdb.resid → resid_len; serial_number removed */
 		HFC_4L_TO_4B(trc4->resid, cmnd->resid_len);
-		HFC_4L_TO_4B(trc4->serial_number, 0);
+		trc4->serial_number = 0;	/* 0 is endian-neutral */
 		HFC_4L_TO_4B(trc4->result, cmnd->result);
 		HFC_2L_TO_2B(trc4->lun_id, CMND_LUN(cmnd));	/* FCLNX-GPL-FX-202 */
 	}

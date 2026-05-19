@@ -730,7 +730,7 @@ void hfc_fx_errlog( struct port_info *pp,
 		if( hfcp->cmd_pkt != NULL ){
 			memcpy(&(err1->err_detail_2.uni.scsi.cmnd[0]), hfcp->cmd_pkt->cmnd, 16) ;
 			/* kernel 5.15+: scsi_cmnd->serial_number removed; use 0 for trace */
-			HFC_4L_TO_4B(err1->err_detail_2.uni.scsi.serial_number, 0);
+			err1->err_detail_2.uni.scsi.serial_number = 0;	/* 0 is endian-neutral */
 			HFC_4L_TO_4B(err1->err_detail_2.uni.scsi.retries, hfcp->cmd_pkt->retries);
 			HFC_4L_TO_4B(err1->err_detail_2.uni.scsi.allowed, hfcp->cmd_pkt->allowed);
 			sdev = hfcp->cmd_pkt->device;
@@ -6256,7 +6256,7 @@ void hfc_fx_hand2_trace(
 			HFC_MEMCPY(&trc4->cmnd[0], cmnd->cmnd, 16);
 			/* kernel 5.x+: sdb.resid → resid_len; serial_number removed */
 			HFC_4L_TO_4B(trc4->resid, cmnd->resid_len);
-			HFC_4L_TO_4B(trc4->serial_number, 0);
+			trc4->serial_number = 0;	/* 0 is endian-neutral */
 			HFC_4L_TO_4B(trc4->result, cmnd->result);
 		}
 	}/*-- trace format 4 --*/
@@ -6482,7 +6482,7 @@ void hfc_fx_hand2_trace(
 			HFC_MEMCPY(&trc5->cmnd[0], cmnd->cmnd, 16);
 			/* kernel 5.x+: sdb.resid → resid_len; serial_number removed */
 			HFC_4L_TO_4B(trc5->resid, cmnd->resid_len);
-			HFC_4L_TO_4B(trc5->serial_number, 0);
+			trc5->serial_number = 0;	/* 0 is endian-neutral */
 			HFC_4L_TO_4B(trc5->result, cmnd->result);
 			
 			sdev = cmnd->device;

@@ -798,7 +798,7 @@ void hfc_errlog( struct adap_info *ap,
 		if( hfcp->cmd_pkt != NULL ){
 			memcpy(&(err1->err_detail_2.uni.scsi.cmnd[0]), hfcp->cmd_pkt->cmnd, 16) ;
 			/* kernel 5.15+: scsi_cmnd->serial_number removed; use 0 for trace */
-			HFC_4L_TO_4B(err1->err_detail_2.uni.scsi.serial_number, 0);
+			err1->err_detail_2.uni.scsi.serial_number = 0;	/* 0 is endian-neutral */
 			HFC_4L_TO_4B(err1->err_detail_2.uni.scsi.retries, hfcp->cmd_pkt->retries);
 			HFC_4L_TO_4B(err1->err_detail_2.uni.scsi.allowed, hfcp->cmd_pkt->allowed);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,30)
