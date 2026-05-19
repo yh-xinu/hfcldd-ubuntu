@@ -93,7 +93,7 @@ hfc_fx_intr_xrb(int irq, void *intr_entry)
 	/* get timestamp and processor id */
 	if (pp->pm_control == HFC_FX_PM_ON) {
 		cpuno = smp_processor_id();
-		rdtscll(time);
+		time = rdtsc_ordered();	/* kernel 4.3+: rdtscll removed; use rdtsc_ordered() */
 	}
 	
 	/* Check if core <= 4 */
@@ -421,7 +421,7 @@ hfc_fx_intr_share(int irq, void *intr_entry)
 	/* get timestamp and processor id */
 	if (pp->pm_control == HFC_FX_PM_ON) {
 		cpuno = smp_processor_id();
-		rdtscll(time);
+		time = rdtsc_ordered();	/* kernel 4.3+: rdtscll removed; use rdtsc_ordered() */
 	}
 	
 	vector = ((struct hfc_intr_entry *)intr_entry)->vector;
@@ -2199,11 +2199,7 @@ void hfc_fx_core_start_resp(struct port_info *pp, struct core_info *core )
 		return;
 	}
 	
-	if(core->logdata == NULL){
-		HFC_DBGPRT("*hfcldd : hfc_fx_core_start_resp - core->logdata == NULL");
-		return;
-	}
-	
+	/* kernel 6.x: core->logdata is a fixed array; NULL check removed (-Waddress) */
 	memset((void *)core->logdata, 0, 16);
 	memcpy(&core->logdata[0],(char *)&mbox->mb_resp.mb_code, 4) ;
 	core->logdata[5] = mbox->mb_resp.esw ;
@@ -3691,6 +3687,7 @@ void hfc_fx_plogi_target_resp(struct port_info *pp, struct core_info *core )
 		clear_bit(HFC_TF_WWN_VALID, (ulong *)&target->flags);
 		if (HFC_FX_MQ_VALID(pp))
 			hfc_fx_mq_change_target_info(pp, target);
+		fallthrough;	/* kernel 6.x: suppress -Wimplicit-fallthrough */
 
 	case SCS_NO_DEV_RESP :
 	case SCS_CANCEL_RESP :
@@ -8826,7 +8823,7 @@ int hfc_fx_xrb_resp(
 			if (hfcp->pm_pkt_no != 0xffff) {
 				pp->pm_pkt_pool[hfcp->pm_pkt_no].xrb_cmd_cnt = xrb_cnt;
 				pp->pm_pkt_pool[hfcp->pm_pkt_no].cpuno_iodone = smp_processor_id();
-				rdtscll(pp->pm_pkt_pool[hfcp->pm_pkt_no].tsc_iodone);
+				pp->pm_pkt_pool[hfcp->pm_pkt_no].tsc_iodone = rdtsc_ordered();	/* kernel 4.3+ */
 			}
 		}
 	}
