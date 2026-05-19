@@ -4101,7 +4101,7 @@ int flash_update(
  * Notes:      - Be sure to lock (spin_lock) adap_info->tbl_lock
  *             before calling this subroutine.
  */
-static int hfc_diag(
+int hfc_diag(
 	void	*arg,				/* struct diag_ioctl */
 	struct	adap_info	*ap)	/* struct adap_info */
 {

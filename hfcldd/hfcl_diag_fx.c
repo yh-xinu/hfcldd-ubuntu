@@ -6638,7 +6638,7 @@ int fx_read_pm_pkt(
  * Notes:      - Be sure to lock (spin_lock) port_info->tbl_lock
  *             before calling this subroutine.
  */
-static int hfc_fx_diag(
+int hfc_fx_diag(
 	void	*arg,				/* struct diag_ioctl */
 	struct	port_info	*pp)	/* struct port_info */
 {
