@@ -305,7 +305,7 @@ int hfc_fx_strategy_pg(struct scsi_cmnd *cmnd, void (*iodone)(struct scsi_cmnd *
 		|| (pp->core_control == HFC_FX_CORECTL_CPU_TO_CORE)
 		|| (pp->cpu_map == HFC_VEC_CPU_MAP_ENABLE ) ){	/* FCLNX-GPL-FX-193 */
 		cpuno = smp_processor_id();
-		rdtscll(time);
+		time = rdtsc_ordered();	/* kernel 4.3+: rdtscll removed */
 	}
 	
 	HFC_PORTLOCK_IRQSAVE(pp,flags);
@@ -321,7 +321,7 @@ int hfc_fx_strategy_pg(struct scsi_cmnd *cmnd, void (*iodone)(struct scsi_cmnd *
 			hfcp->adap_status = SCS_NO_ADAPINFO;
 		HFC_DBGPRT(" hfcldd : hfc_fx_strategy - rp==NULL-error\n");
 
-		cmnd->scsi_done(cmnd);
+		scsi_done(cmnd);	/* kernel 5.16+: use scsi_done() */
 		HFC_PORTUNLOCK_IRQRESTORE(pp,flags);
 		return(func_rc);
 	}
@@ -828,8 +828,8 @@ int hfc_fx_strategy_port(struct hfc_pkt_fx *hfcp, int core_no)
 
 	pp = hfcp->pp;
 	
-	/* kernel 5.16+: detect ioctl via ap->ioctl_cmnd */
-	if( cmnd == ap->ioctl_cmnd ) ioctl_mode=1;
+	/* kernel 5.16+: detect ioctl via pp->ioctl_cmnd (fx uses port_info) */
+	if( cmnd == pp->ioctl_cmnd ) ioctl_mode=1;
 	
     cmd_lun = (ushort)CMND_LUN(cmnd);						/* FCLNX-GPL-0548 */
     cmd_lun = (cmd_lun & 0x3fff);							/* FCLNX-GPL-0548 */
@@ -1416,8 +1416,8 @@ void hfc_fx_start(struct port_info *pp, struct region_info *rp, struct core_info
 		
 		if(cmnd != NULL)
 		{
-			/* kernel 5.16+: detect ioctl via ap->ioctl_cmnd */
-			if( cmnd == ap->ioctl_cmnd ) ioctl_mode=1;
+			/* kernel 5.16+: detect ioctl via pp->ioctl_cmnd (fx uses port_info) */
+			if( cmnd == pp->ioctl_cmnd ) ioctl_mode=1;
 		}
 		
 		if (HFC_FX_MQ_VIRTUAL_PORT(pp)) {
@@ -1646,7 +1646,7 @@ void hfc_fx_start(struct port_info *pp, struct region_info *rp, struct core_info
 		
 		if (pp->pm_control == HFC_FX_PM_ON) {
 			if (hfcp->pm_pkt_no != 0xffff) {
-				rdtscll(pp->pm_pkt_pool[hfcp->pm_pkt_no].tsc_enq_xob);
+				pp->pm_pkt_pool[hfcp->pm_pkt_no].tsc_enq_xob = rdtsc_ordered();	/* kernel 4.3+ */
 				pp->pm_pkt_pool[hfcp->pm_pkt_no].cpuno_enq_xob = cpuno;
 			}
 		}
@@ -1901,7 +1901,8 @@ hfc_fx_get_new_cmnd(struct port_info *pp)
 	memset(dummy_cmnd, 0, sizeof(struct dummy_scsi_cmnd));
 	cmnd = (struct scsi_cmnd *)&dummy_cmnd->cmnd;
 	cmnd->device = (struct scsi_device *)&dummy_cmnd->device;
-	cmnd->cmnd   = (uchar *)&dummy_cmnd->cdb[0];
+	/* kernel 4.x+: scsi_cmnd.cmnd is fixed array[32]; pointer assign removed */
+	/* cdb data is stored directly in cmnd->cmnd[] */
 	
 	return (cmnd);
 }
@@ -4539,8 +4540,8 @@ int hfc_fx_resource_chk(struct port_info *pp, struct core_info *core, struct hfc
 //		return( HFC_XOB_FULL ) ;
 //	}
 	
-	/* kernel 5.16+: detect ioctl via ap->ioctl_cmnd */
-	if( cmnd == ap->ioctl_cmnd ) ioctl_mode=1;
+	/* kernel 5.16+: detect ioctl via pp->ioctl_cmnd (fx uses port_info) */
+	if( cmnd == pp->ioctl_cmnd ) ioctl_mode=1;
 
 	if( hfcp->cmd_flags & CFLAG_RESET_ANY ){	/* FCLNX-GPL-FX-014 */
 		chk_next = 1; // reset
@@ -5457,8 +5458,8 @@ void hfc_fx_iodone(
 	uint					data_size;
 	uchar					size;
 	
-	/* kernel 5.16+: detect ioctl via ap->ioctl_cmnd */
-	if( cmnd == ap->ioctl_cmnd ) ioctl_mode=1;
+	/* kernel 5.16+: detect ioctl via pp->ioctl_cmnd (fx uses port_info) */
+	if( cmnd == pp->ioctl_cmnd ) ioctl_mode=1;
 
 	if (hfcp != NULL)
 	{
