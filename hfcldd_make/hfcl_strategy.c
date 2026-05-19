@@ -228,12 +228,12 @@ int hfc_strategy_pg(struct scsi_cmnd *cmnd, void (*iodone)(struct scsi_cmnd *))
 		}
 	}
 
-	/* kernel 5.16+: scsi_cmnd->scsi_done removed; iodone stored in local var only */
+	cmnd->scsi_done = iodone;
 	if( iodone == (void *) hfc_ioctl_iodone ) ioctl_mode=1;
 	cmnd->result = 0;
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,30)
 	scsi_set_resid(cmnd, 0);
-	req = scsi_cmd_to_rq(cmnd);	/* kernel 5.16+: cmnd->request removed */
+	req = cmnd->request;			/* FCLNX-GPL-409 */
 	sdev = cmnd->device;			/* FCLNX-GPL-575 */
 	if( sdev != NULL ){
 		rq = sdev->request_queue;
@@ -282,8 +282,7 @@ int hfc_strategy_pg(struct scsi_cmnd *cmnd, void (*iodone)(struct scsi_cmnd *))
 			hfcp->adap_status = SCS_NO_ADAPINFO;			/* FCLNX-0534 */
 		HFC_ERRPRT(" hfcldd : hfc_strategy - ap==NULL-error\n");
 
-		/* kernel 5.16+: call iodone directly if set, else scsi_done() */
-		if (iodone) iodone(cmnd); else scsi_done(cmnd);
+		cmnd->scsi_done(cmnd);
 		return(func_rc);
 	}
 
@@ -368,8 +367,7 @@ int hfc_strategy_hfcp(struct hfc_pkt *hfcp)
 
 	ap = hfcp->ap;
 
-	/* kernel 5.16+: scsi_done member removed; detect ioctl via ap->ioctl_cmnd */
-	if( cmnd == ap->ioctl_cmnd ) ioctl_mode=1;
+	if( cmnd->scsi_done == (void *) hfc_ioctl_iodone ) ioctl_mode=1;
 	
     mpap = ap->mp_adap_info;
 	
@@ -917,8 +915,7 @@ int hfc_start(struct adap_info    *ap ,
 
 		if(cmnd != NULL)
 		{
-			/* kernel 5.16+: detect ioctl via ap->ioctl_cmnd */
-			if( cmnd == ap->ioctl_cmnd ) ioctl_mode=1;
+			if( cmnd->scsi_done == (void *) hfc_ioctl_iodone ) ioctl_mode=1;
 		}
 
 		/* Not issue I/O command during executing Abort_Task_Set or LUN_Reset */ /* FCLNX-GPL-289 *//* FCLNX-GPL-336 */
@@ -1470,7 +1467,7 @@ void hfc_dummy_copy(struct adap_info *ap, struct scsi_cmnd *cmnd, struct scsi_cm
 	dummy_cmnd->cmd_len = cmnd->cmd_len;
 	dummy_cmnd->cmnd[0] = cmnd->cmnd[0];
 	dummy_cmnd->sc_data_direction = cmnd->sc_data_direction;
-	/* kernel 5.16+: scsi_cmnd->scsi_done removed */
+	dummy_cmnd->scsi_done = cmnd->scsi_done;
 	dummy_cmnd->result = 0;		/* FCLNX-GPL-0343 */
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,16)
 	set_bit(CMND_VALID, (ulong *)&dummy_cmnd->sc_magic );
@@ -4092,8 +4089,7 @@ int hfc_resource_chk(struct adap_info *ap,
 		return( HFC_XOB_FULL ) ;
 	}
 	
-	/* kernel 5.16+: detect ioctl via ap->ioctl_cmnd */
-	if( cmnd == ap->ioctl_cmnd ) ioctl_mode=1; 	/* FCLNX-GPL-0343 */
+	if( cmnd->scsi_done == (void *) hfc_ioctl_iodone ) ioctl_mode=1; 	/* FCLNX-GPL-0343 */
 
 	/* Is xob full? */
 	if( (ap->xob_no == (ap->xob_max-1)) &&
@@ -4884,12 +4880,21 @@ void hfc_make_cmdiu( struct adap_info *ap, struct hfc_pkt *hfcp )
 	 && !test_bit(CFLAG_TARGET_RESET, (ulong *)&hfcp->cmd_flags) 
 	 && !test_bit(CFLAG_BUS_RESET, (ulong *)&hfcp->cmd_flags) ) 
 	{
-  		/* kernel 5.4+: cmnd->tag / HEAD_OF_QUEUE_TAG removed; use Simple-Q */
   		if (cmnd->device->tagged_supported) {
-    			fcp_cmd.fcp_cntl.qtype = 0;			/* Simple-Q */
+    		switch (cmnd->tag) {
+    		case HEAD_OF_QUEUE_TAG:
+      			fcp_cmd.fcp_cntl.qtype = 1;			/* Head-of-Q			*/
+      			break;
+    		case ORDERED_QUEUE_TAG:
+      			fcp_cmd.fcp_cntl.qtype = 2;			/* Ordered-Q			*/
+      			break;
+    		default:
+      			fcp_cmd.fcp_cntl.qtype = 0;			/* Simple-Q 			*/
+    			break;
+    		}
   		}
   		else{
-    		fcp_cmd.fcp_cntl.qtype = 5;				/* Untagged-Q */
+    		fcp_cmd.fcp_cntl.qtype = 5;				/* Untagged-Q			*/
     	}
   	}
   	else{
@@ -5253,8 +5258,7 @@ void hfc_iodone(
 	uchar					write_retries=0;	/* FCLNX-GPL-0449 */
 	uint					ioctl_mode=0;  		/* FCLNX-GPL-464 */
 	
-	/* kernel 5.16+: detect ioctl via ap->ioctl_cmnd */
-	if( cmnd == ap->ioctl_cmnd ) ioctl_mode=1;	/* FCLNX-GPL-464 */
+	if( cmnd->scsi_done == (void *) hfc_ioctl_iodone ) ioctl_mode=1;	/* FCLNX-GPL-464 */
 
 	if (hfcp != NULL)
 	{
@@ -5424,11 +5428,11 @@ void hfc_iodone(
 #endif
 			}
 			else {
-				/* kernel 5.16+: scsi_done() always valid, no NULL check needed */
+				if ( cmnd->scsi_done != NULL )
 #ifdef	HFC_DEBUG_IODONE	/* FCLNX-0616 */
 					hfc_stra_trace(HFC_TRC_IODONE ,0x11 ,ap ,target , hfcp, (ulong)cmnd, 0, 0);
 #endif /* HFC_DEBUG_IODONE */	/* FCLNX-0616 */
-					scsi_done(cmnd);
+					cmnd->scsi_done(cmnd);
 			}
 		}
 		else 
@@ -5596,8 +5600,7 @@ void hfc_iodone(
 							break;
 							
 						case DID_OK         :	/* Normal end                              */
-							/* kernel 5.14+: CHECK_CONDITION removed; use SAM_STAT_CHECK_CONDITION */
-							if ((cmnd->result & 0xfe) != SAM_STAT_CHECK_CONDITION)
+							if (((cmnd->result & STATUS_MASK)>>1) != CHECK_CONDITION)
 								break;
 							
 							if ( ((cmnd->sense_buffer[2] & 0xf) == NOT_READY)	/* FCLNX-0246 */
@@ -5750,11 +5753,12 @@ void hfc_iodone(
 				}
 			}
 
-			/* kernel 5.16+: use scsi_done() global function */
+			if ( cmnd->scsi_done != NULL ) {
 #ifdef	HFC_DEBUG_IODONE	/* FCLNX-0616 */
 			hfc_stra_trace(HFC_TRC_IODONE ,0x10 ,ap ,target , hfcp, (ulong)cmnd, 0, 0);
 #endif /* HFC_DEBUG_IODONE */	/* FCLNX-0616 */
-				scsi_done(cmnd);
+				cmnd->scsi_done(cmnd);
+			}
 
 			if ( !test_bit(CFLAG_HSDLDD_VALID, (ulong *)&hfcp->cmd_flags) )		/* only hsdldd */
 				ap->pkt_cnt--;
@@ -5766,11 +5770,12 @@ void hfc_iodone(
 	}
 	else
 	{
-		/* kernel 5.16+: use scsi_done() global function */
+		if ( cmnd->scsi_done != NULL ) {
 #ifdef	HFC_DEBUG_IODONE	/* FCLNX-0616 */
 			hfc_stra_trace(HFC_TRC_IODONE ,0x12 ,ap ,target , NULL, (ulong)cmnd, 0, 0);
 #endif /* HFC_DEBUG_IODONE */	/* FCLNX-0616 */
-			scsi_done(cmnd);
+			cmnd->scsi_done(cmnd);
+		}
 	}
 
 }

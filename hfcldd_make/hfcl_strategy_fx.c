@@ -219,7 +219,7 @@ int hfc_fx_strategy_pg(struct scsi_cmnd *cmnd, void (*iodone)(struct scsi_cmnd *
 	struct Scsi_Host  *s_host = cmnd->device->host;		/* FCLNX-GPL-FX-445 */
 	
 	pp = (struct port_info *) CMND_HOSTDATA(cmnd);
-	/* kernel 5.16+: scsi_done member removed */
+	cmnd->scsi_done = iodone;
 	if( iodone == (void *) hfc_fx_ioctl_iodone ) ioctl_mode=1;
 	cmnd->result = 0;
 
@@ -233,7 +233,7 @@ int hfc_fx_strategy_pg(struct scsi_cmnd *cmnd, void (*iodone)(struct scsi_cmnd *
 			hfcp->adap_status = SCS_NO_ADAPINFO;
 		HFC_DBGPRT(" hfcldd : hfc_fx_strategy - pp==NULL-error\n");
 
-		if (iodone) iodone(cmnd); else scsi_done(cmnd);	/* kernel 5.16+ */
+		cmnd->scsi_done(cmnd);
 		return(func_rc);
 	}
 	
@@ -264,7 +264,7 @@ int hfc_fx_strategy_pg(struct scsi_cmnd *cmnd, void (*iodone)(struct scsi_cmnd *
 	}
 
 	scsi_set_resid(cmnd, 0);
-	req = scsi_cmd_to_rq(cmnd);	/* kernel 5.16+: cmnd->request removed */
+	req = cmnd->request;
 	sdev = cmnd->device;
 	if( sdev != NULL ){
 		rq = sdev->request_queue;
@@ -828,8 +828,7 @@ int hfc_fx_strategy_port(struct hfc_pkt_fx *hfcp, int core_no)
 
 	pp = hfcp->pp;
 	
-	/* kernel 5.16+: detect ioctl via ap->ioctl_cmnd */
-	if( cmnd == ap->ioctl_cmnd ) ioctl_mode=1;
+	if( cmnd->scsi_done == (void *) hfc_fx_ioctl_iodone ) ioctl_mode=1;
 	
     cmd_lun = (ushort)CMND_LUN(cmnd);						/* FCLNX-GPL-0548 */
     cmd_lun = (cmd_lun & 0x3fff);							/* FCLNX-GPL-0548 */
@@ -1416,8 +1415,7 @@ void hfc_fx_start(struct port_info *pp, struct region_info *rp, struct core_info
 		
 		if(cmnd != NULL)
 		{
-			/* kernel 5.16+: detect ioctl via ap->ioctl_cmnd */
-			if( cmnd == ap->ioctl_cmnd ) ioctl_mode=1;
+			if( cmnd->scsi_done == (void *) hfc_fx_ioctl_iodone ) ioctl_mode=1;
 		}
 		
 		if (HFC_FX_MQ_VIRTUAL_PORT(pp)) {
@@ -1943,7 +1941,7 @@ void hfc_fx_dummy_copy(struct port_info *pp, struct scsi_cmnd *cmnd, struct scsi
 	dummy_cmnd->cmd_len = cmnd->cmd_len;
 	dummy_cmnd->cmnd[0] = cmnd->cmnd[0];
 	dummy_cmnd->sc_data_direction = cmnd->sc_data_direction;
-	/* kernel 5.16+: scsi_cmnd->scsi_done removed */
+	dummy_cmnd->scsi_done = cmnd->scsi_done;
 	dummy_cmnd->result = 0;		/* FCLNX-GPL-0343 */
 	set_bit(CMND_VALID, (ulong *)&dummy_cmnd->eh_eflags );
 
@@ -4539,8 +4537,7 @@ int hfc_fx_resource_chk(struct port_info *pp, struct core_info *core, struct hfc
 //		return( HFC_XOB_FULL ) ;
 //	}
 	
-	/* kernel 5.16+: detect ioctl via ap->ioctl_cmnd */
-	if( cmnd == ap->ioctl_cmnd ) ioctl_mode=1;
+	if( cmnd->scsi_done == (void *) hfc_fx_ioctl_iodone ) ioctl_mode=1;
 
 	if( hfcp->cmd_flags & CFLAG_RESET_ANY ){	/* FCLNX-GPL-FX-014 */
 		chk_next = 1; // reset
@@ -5098,12 +5095,21 @@ void hfc_fx_make_cmdiu( struct port_info *pp, struct hfc_pkt_fx *hfcp )
 	  && !HFC_HFCP_FX_CFLAG_TEST(CFLAG_TARGET_RESET, hfcp)
 	  && !HFC_HFCP_FX_CFLAG_TEST(CFLAG_BUS_RESET, hfcp) )
 	{
-  		/* kernel 5.4+: cmnd->tag removed; use Simple-Q */
   		if (cmnd->device->tagged_supported) {
-    			fcp_cmd.fcp_cntl.qtype = 0;			/* Simple-Q */
+    		switch (cmnd->tag) {
+    		case HEAD_OF_QUEUE_TAG:
+      			fcp_cmd.fcp_cntl.qtype = 1;			/* Head-of-Q			*/
+      			break;
+    		case ORDERED_QUEUE_TAG:
+      			fcp_cmd.fcp_cntl.qtype = 2;			/* Ordered-Q			*/
+      			break;
+    		default:
+      			fcp_cmd.fcp_cntl.qtype = 0;			/* Simple-Q 			*/
+    			break;
+    		}
   		}
   		else{
-    		fcp_cmd.fcp_cntl.qtype = 0;				/* Simple-Q : FIVE-FX */
+    		fcp_cmd.fcp_cntl.qtype = 0;				/* Simple-Q : FIVE-FX	*/
     	}
   	}
   	else{
@@ -5457,8 +5463,7 @@ void hfc_fx_iodone(
 	uint					data_size;
 	uchar					size;
 	
-	/* kernel 5.16+: detect ioctl via ap->ioctl_cmnd */
-	if( cmnd == ap->ioctl_cmnd ) ioctl_mode=1;
+	if( cmnd->scsi_done == (void *) hfc_fx_ioctl_iodone ) ioctl_mode=1;
 
 	if (hfcp != NULL)
 	{
@@ -5595,8 +5600,9 @@ void hfc_fx_iodone(
 				pp->scsi_end_cnt++;
 			}
 			
-			/* kernel 5.16+: use scsi_done() */
-			scsi_done(cmnd);
+			if ( cmnd->scsi_done != NULL ) {
+				cmnd->scsi_done(cmnd);
+			}
 			
 			if (pp->pm_control == HFC_FX_PM_ON) {
 				if (hfcp->pm_pkt_no != 0xffff) {
@@ -5611,8 +5617,9 @@ void hfc_fx_iodone(
 	}
 	else
 	{
-		/* kernel 5.16+: use scsi_done() */
-		scsi_done(cmnd);
+		if ( cmnd->scsi_done != NULL ) {
+			cmnd->scsi_done(cmnd);
+		}
 		
 		pp->scsi_err_cnt++;
 		pp->scsi_end_cnt++;
@@ -5776,8 +5783,7 @@ int hfc_fx_cmd_retry_check(
 				break;
 				
 			case DID_OK         :	/* Normal end                              */
-				/* kernel 5.14+: CHECK_CONDITION removed */
-				if ((cmnd->result & 0xfe) != SAM_STAT_CHECK_CONDITION)
+				if (((cmnd->result & STATUS_MASK)>>1) != CHECK_CONDITION)
 					break;
 				
 				if ( ((cmnd->sense_buffer[2] & 0xf) == NOT_READY)

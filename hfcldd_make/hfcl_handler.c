@@ -3111,8 +3111,7 @@ void hfc_scsi_chk(
 				else {
 					Scmd->result &= 0xFF00FF00;
 					Scmd->result |= DID_OK << 16;
-					/* kernel 5.14+: CHECK_CONDITION removed; use SAM_STAT_CHECK_CONDITION */
-						Scmd->result |= SAM_STAT_CHECK_CONDITION;
+					Scmd->result |= (CHECK_CONDITION << 1);
 					Scmd->sense_buffer[0] = 0xf0;			/* Error Code      */
 
 					switch (diskerr_code) {
@@ -3187,7 +3186,7 @@ void hfc_scsi_chk(
 			  && (hfc_manage_info.lg_target_info) 						/* FCLNX-0611 */
 			  && ((uchar)Scmd->cmnd[0] == 0xA0) 						/* FCLNX-0611 */
 			  && (hfcp->dev == NULL)									/* FCLNX-0611 */
-			  && (Scmd == ap->ioctl_cmnd) ) {	/* FCLNX-0611: kernel 5.16+ ioctl detect */
+			  && (Scmd->scsi_done == (void *) hfc_ioctl_iodone ) ) {	/* FCLNX-0611 */
 				hfc_manage_info.npubp->hfc_check_luconfig(hfcp, Scmd);	/* FCLNX-0611 */
 			}
 #endif		/* FCLNX-GPL-0449 */
