@@ -1597,7 +1597,7 @@ void hfc_ioctl_iodone( struct scsi_cmnd *cmnd ) {
  *
  * Notes:       
  */
-void hfc_ioctl_sleep( struct scsi_cmnd *cmnd ) {
+static void hfc_ioctl_sleep( struct scsi_cmnd *cmnd ) {
 	struct adap_info *ap;
 
 	ap = (struct adap_info *)CMND_HOSTDATA(cmnd);
@@ -1849,10 +1849,7 @@ int hfc_inquiry( struct adap_info *ap, void *arg ) {
 		return ENOMEM;
 	}
 	
-	if( cmnd->cmnd == NULL ){
-		HFC_DBGPRT( "ioctl error(trcid=0x%04x, subid=0x%04x) \n", HFC_TRC_IOCTL_SC_INQ, 0x07 );
-		return ENOMEM;
-	}
+	/* kernel 4.x+: cmnd is fixed array; NULL check removed */
 	
 	if( cmnd->device == NULL ){
 		HFC_DBGPRT( "ioctl error(trcid=0x%04x, subid=0x%04x) \n", HFC_TRC_IOCTL_SC_INQ, 0x08 );
@@ -2133,10 +2130,7 @@ int hfc_sciocmd( struct adap_info *ap, void *arg, int internal, int timeout) {
 		return ENOMEM;
 	}
 	
-	if( cmnd->cmnd == NULL ){
-		HFC_DBGPRT( "ioctl error(trcid=0x%04x, subid=0x%04x) \n", HFC_TRC_IOCTL_SC_INQ, 0x07 );
-		return ENOMEM;
-	}
+	/* kernel 4.x+: cmnd is fixed array; NULL check removed */
 	
 	if( cmnd->device == NULL ){
 		HFC_DBGPRT( "ioctl error(trcid=0x%04x, subid=0x%04x) \n", HFC_TRC_IOCTL_SC_INQ, 0x08 );
@@ -4639,7 +4633,7 @@ int hfc_debug_scsi_parameter( struct adap_info *ap, void *arg ) {
  *
  * Notes:       
  */
-int hfc_ioctl_flash_init( struct adap_info *ap )
+static int hfc_ioctl_flash_init( struct adap_info *ap )
 {
 	int rtn = 0;
 	uint ramadr;
@@ -4677,7 +4671,7 @@ int hfc_ioctl_flash_init( struct adap_info *ap )
  *
  * Notes:       
  */
-int hfc_ioctl_flash_read( struct adap_info *ap, int offset, int size, uchar *buf )
+static int hfc_ioctl_flash_read( struct adap_info *ap, int offset, int size, uchar *buf )
 {
 	int rtn = 0;
 	uint adr=0;
@@ -4739,7 +4733,7 @@ int hfc_ioctl_flash_read( struct adap_info *ap, int offset, int size, uchar *buf
  *
  * Notes:       
  */
-int hfc_ioctl_flash_erase( struct adap_info *ap, int offset )
+static int hfc_ioctl_flash_erase( struct adap_info *ap, int offset )
 {
 	int rtn = 0;
 	uint adr;
@@ -4797,7 +4791,7 @@ int hfc_ioctl_flash_erase( struct adap_info *ap, int offset )
  *
  * Notes:       
  */
-int hfc_ioctl_flash_write( struct adap_info *ap, int offset, int size, uchar *buf )
+static int hfc_ioctl_flash_write( struct adap_info *ap, int offset, int size, uchar *buf )
 {
 	int rtn = 0;
 	uint adr=0;
@@ -4860,7 +4854,7 @@ int hfc_ioctl_flash_write( struct adap_info *ap, int offset, int size, uchar *bu
  *
  * Notes:       
  */
-int hfc_ioctl_flash_fini( struct adap_info *ap )
+static int hfc_ioctl_flash_fini( struct adap_info *ap )
 {
 	int rtn = 0;
 	HFC_ENTRY(__func__);

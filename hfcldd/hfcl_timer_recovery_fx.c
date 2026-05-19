@@ -4172,10 +4172,10 @@ void hfc_fx_watchdog(struct timer_list *t)
 						break ;
 					/* Cancel wait queue of SCSI command and Task Management */	/* FCLXN-GPL-FX-092 */
 					for (i=0 ; i< MAX_CORE_PROBE_FX ; i += (MAX_CORE_PROBE_FX/pp->core_num)) {
-					if ((core_wk = pp->region_arg[pp->rid]->core_arg[i]) == NULL)
-						continue;
+						if ((core_wk = pp->region_arg[pp->rid]->core_arg[i]) == NULL)
+							continue;
 						hfc_fx_cancel_scsi_cmd(pp,core_wk,target,dev->lun,NULL,SCS_WAIT_RESET, HFC_CSCSI_RESET,
-						FALSE,TRUE, HFC_FLASH_DEV );
+							FALSE,TRUE, HFC_FLASH_DEV );
 					}	/* FCLXN-GPL-FX-092 */
 					if (HFC_FX_MQ_VALID(pp) && HFC_FX_PHYSICAL_PORT(pp)) {
 						hfc_fx_mq_cancel_scsi_cmd(pp, target, dev->lun, NULL, SCS_WAIT_RESET, HFC_CSCSI_RESET,

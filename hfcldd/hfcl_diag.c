@@ -179,7 +179,7 @@ struct logaddr_list {
  *  EIO        - Other errors
  * Notes:       
  */
-int set_fw_trace_mode(
+static int set_fw_trace_mode(
 	struct	adap_info	*ap,	/* struct adap_info */
 	struct	diag_ioctl	*diag)	/* struct diag_ioctl */
 {
@@ -576,7 +576,7 @@ int load_ch_trace_log(
  *  EIO        - Other errors
  * Notes:       
  */
-int meint_log(
+static int meint_log(
 	struct	adap_info	*ap,	/* struct adap_info */
 	struct	diag_ioctl	*diag)	/* struct diag_ioctl */
 {
@@ -4101,7 +4101,7 @@ int flash_update(
  * Notes:      - Be sure to lock (spin_lock) adap_info->tbl_lock
  *             before calling this subroutine.
  */
-int hfc_diag(
+static int hfc_diag(
 	void	*arg,				/* struct diag_ioctl */
 	struct	adap_info	*ap)	/* struct adap_info */
 {

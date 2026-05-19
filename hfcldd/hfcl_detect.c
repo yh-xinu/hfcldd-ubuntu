@@ -11957,7 +11957,7 @@ hfc_slave_configure(struct scsi_device *sdev)
 	int queue_depth, qd;
 	struct dev_info	 *dev=NULL;
 	ulong			 flags = 0;
-	struct request_queue	*rq=NULL;	/* FCLNX-GPL-409 */
+	/* FCLNX-GPL-409: rq removed (blk_queue_rq_timed_out no longer used) */
 	struct fc_rport *rport=NULL;	/* FCLNX-GPL-FX-472 */
 #if defined(HFC_X8664_SLES11SP3) || defined(HFC_RHEL7) || defined(HFC_X8664_SLES12) || defined(HFC_X8664_OEL6) || defined(HFC_X8664_OEL7)
 #ifdef SYSFS_SUPPORT

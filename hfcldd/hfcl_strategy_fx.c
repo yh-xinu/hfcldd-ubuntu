@@ -426,7 +426,7 @@ static inline struct socket_info* hfc_fx_get_socket_info(struct port_info *pp, u
 }
 
 
-uchar hfc_fx_choose_core_minque(struct port_info * pp, struct hfc_pkt_fx *hfcp, uchar *use_core_list)
+static uchar hfc_fx_choose_core_minque(struct port_info * pp, struct hfc_pkt_fx *hfcp, uchar *use_core_list)
 {
 	uchar core_no = 0, wk_no = 0;
 	int i = 0;
@@ -596,7 +596,7 @@ uchar hfc_fx_choose_core_minque(struct port_info * pp, struct hfc_pkt_fx *hfcp, 
  *
  * Notes:
  */
-struct core_info *hfc_fx_choose_core(struct port_info *pp,struct hfc_pkt_fx *hfcp)
+static struct core_info *hfc_fx_choose_core(struct port_info *pp,struct hfc_pkt_fx *hfcp)
 {
 	uchar core_no = pp->master_core_no; /* variable to keep temporary result */
 	uchar i = 0, skip_update_curr_core = 0;
@@ -1931,10 +1931,7 @@ void hfc_fx_dummy_copy(struct port_info *pp, struct scsi_cmnd *cmnd, struct scsi
 		return;
 	}
 
-	if(dummy_cmnd->cmnd == NULL) 
-	{
-		return;
-	}
+	/* kernel 4.x+: cmnd is fixed array; NULL check removed (-Waddress) */
 
 	CMND_TARGET(dummy_cmnd) = CMND_TARGET(cmnd);
 

@@ -652,7 +652,7 @@ ldch_error_exit:
  *  EIO        - Other errors
  * Notes:       
  */
-int fx_meint_log(
+static int fx_meint_log(
 	struct	port_info	*pp,	/* struct port_info */
 	struct	diag_ioctl	*diag)	/* struct diag_ioctl */
 {
@@ -6638,7 +6638,7 @@ int fx_read_pm_pkt(
  * Notes:      - Be sure to lock (spin_lock) port_info->tbl_lock
  *             before calling this subroutine.
  */
-int hfc_fx_diag(
+static int hfc_fx_diag(
 	void	*arg,				/* struct diag_ioctl */
 	struct	port_info	*pp)	/* struct port_info */
 {

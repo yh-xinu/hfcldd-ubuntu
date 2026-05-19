@@ -1455,12 +1455,7 @@ void hfc_dummy_copy(struct adap_info *ap, struct scsi_cmnd *cmnd, struct scsi_cm
 		return;
 	}
 	
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,30)
-	if(dummy_cmnd->cmnd == NULL) 
-	{
-		return;
-	}
-#endif
+/* kernel 4.x+: cmnd is fixed array; NULL check removed (-Waddress) */
 	
 	CMND_TARGET(dummy_cmnd) = CMND_TARGET(cmnd);
 

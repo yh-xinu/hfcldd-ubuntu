@@ -7220,9 +7220,8 @@ int hfc_fx_slave_alloc(struct scsi_device *sdev)
 				}
 				else {
 					struct dev_info_fx *term_dev = target->dev;
-				
-				while (term_dev->next != NULL)
-					term_dev = term_dev->next;
+					while (term_dev->next != NULL)
+						term_dev = term_dev->next;
 					
 					term_dev->next = dev;
 					dev->prev = term_dev;
@@ -7429,7 +7428,7 @@ int hfc_fx_slave_configure(struct scsi_device *sdev)
 	struct dev_info_fx	 	*dev=NULL;
 	struct region_info	*rp = NULL;
 	ulong flags = 0;
-	struct request_queue	*rq=NULL;	/* FCLNX-GPL-409 */
+	/* FCLNX-GPL-409: rq removed */
 	struct fc_rport *rport=NULL;	/* FCLNX-GPL-FX-472 */
 #if defined(HFC_X8664_SLES11SP3) || defined(HFC_RHEL7) || defined(HFC_X8664_SLES12) || defined(HFC_X8664_OEL6) || defined(HFC_X8664_OEL7)
 #ifdef SYSFS_SUPPORT
@@ -9109,7 +9108,7 @@ void hfc_fx_reset_all_timer (struct port_info *pp)
 			w_timer = &pp->isolend_wdog;
 			if( (w_timer != NULL) && (w_timer->timer_flag & HFC_TIMER_VALID) )
 				hfc_fx_watchdog_enter( pp, NULL, NULL, NULL, 0, i, 0, 1);
-				break;
+			break;
 		case HFC_FX_WLINKUP_MCK_TMR :
 			w_timer = &pp->linkup_wdog;
 			if( (w_timer != NULL) && (w_timer->timer_flag & HFC_TIMER_VALID) )
@@ -12458,8 +12457,8 @@ static inline int hfc_fx_search_next_socket(int from, uchar* socket_bitmap, int 
 }
 
 static inline int hfc_fx_count_cpu(int socket_no, uchar *cpu_core_bitmap, int len){
-	struct cpuinfo_x86 	*cpuinfo=NULL;
 	uint32_t			cpu;
+	/* cpuinfo removed: using topology_* functions instead */
 	int					cpu_core_num=0;
 
 	memset( cpu_core_bitmap, 0, len );
@@ -12490,8 +12489,9 @@ static inline int hfc_fx_search_next_cpu(int from_cpu_core_id, uchar *cpu_core_b
 }
 
 static inline struct cpuinfo_x86* hfc_fx_cpu_get_cpuinfo_x86(int phys_proc_id, int cpu_core_id){
-	struct cpuinfo_x86 	*cpuinfo=NULL, *cpuinfo_wk;
+	struct cpuinfo_x86 	*cpuinfo=NULL;
 	uint32_t			cpu;
+	/* cpuinfo_wk removed: using topology_* functions */
 
 	/* kernel 6.7+: use topology_physical_package_id/core_id */
 	for_each_present_cpu(cpu) {

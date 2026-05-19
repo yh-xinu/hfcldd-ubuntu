@@ -3723,6 +3723,7 @@ int hfc_fx_issue_cancel_scsi( struct port_info *pp,
 				hfcp_ad = (ulong) hfcp;
 				mb->mb_init.type.cscsi.driver_used_area = (uint64_t)hfcp_ad;
 			}
+			fallthrough;	/* kernel 6.x: suppress -Wimplicit-fallthrough */
 		case HFC_CANCEL_ITNEXUS		:
 			if(target != NULL){
 				if(cancel_nexus == HFC_CANCEL_ITNEXUS){
@@ -6511,8 +6512,8 @@ int hfc_fx_issue_change_state( struct port_info *pp, uchar state )
 	
 	HFC_DBGPRT("hfc: hfc_fx_issue_change_state start \n");
 	
-	if (HFC_FX_MQ_VIRTUAL_PORT(pp))		/* FCLNX-GPL-206 */
-		hfc_fx_mq_copy_iocinfo(pp);{
+	if (HFC_FX_MQ_VIRTUAL_PORT(pp)) {		/* FCLNX-GPL-206 */
+		hfc_fx_mq_copy_iocinfo(pp);
 	}
 	
 	frame_a = HFC_FX_FRAMEA_CHANGE_STATE;
@@ -7778,7 +7779,6 @@ int hfc_fx_watchdog_enter(struct port_info *pp,
 		{
 			case HFC_FX_SCSI_CMD_TMR :
 				if (!tout) {
-					w_timer->dog.function = NULL;
 					w_timer->timer_flag &= ~HFC_TIMER_VALID;
 					break;
 				} else {
@@ -8037,9 +8037,8 @@ int hfc_fx_watchdog_enter(struct port_info *pp,
 		}
 		if( !(w_timer->timer_flag & HFC_TIMER_VALID) )
 			return (1);
-		if (w_timer->dog.function != NULL) {
+		if (w_timer->timer_flag & HFC_TIMER_VALID) {	/* kernel 4.15+: use timer_flag */
 			del_timer(&w_timer->dog);
-			w_timer->dog.function =  NULL;
 		/* kernel 4.15+: timer_list.data removed */
 			w_timer->timer_flag &= ~HFC_TIMER_VALID;
 			if( timer_id != HFC_FX_SCSI_CMD_TMR ){
@@ -9086,9 +9085,8 @@ int hfc_fx_mp_watchdog_enter( struct port_info *pp, struct core_info *core, stru
 				if(!(&w_timer->dog)){
 					break;
 				}
-				if (w_timer->dog.function != NULL) {
+				if (w_timer->timer_flag & HFC_TIMER_VALID) {	/* kernel 4.15+: use timer_flag */
 					del_timer(&w_timer->dog);
-					w_timer->dog.function =  NULL;
 		/* kernel 4.15+: timer_list.data removed */
 					w_timer->timer_flag &= ~HFC_TIMER_VALID;
 				}
@@ -9104,9 +9102,8 @@ int hfc_fx_mp_watchdog_enter( struct port_info *pp, struct core_info *core, stru
 				if(!(&w_timer->dog)){
 					break;
 				}
-				if (w_timer->dog.function != NULL) {
+				if (w_timer->timer_flag & HFC_TIMER_VALID) {	/* kernel 4.15+: use timer_flag */
 					del_timer(&w_timer->dog);
-					w_timer->dog.function =  NULL;
 		/* kernel 4.15+: timer_list.data removed */
 					w_timer->timer_flag &= ~HFC_TIMER_VALID;
 				}
@@ -9121,9 +9118,8 @@ int hfc_fx_mp_watchdog_enter( struct port_info *pp, struct core_info *core, stru
 				if(!(&w_timer->dog)){
 					break;
 				}
-				if (w_timer->dog.function != NULL) {
+				if (w_timer->timer_flag & HFC_TIMER_VALID) {	/* kernel 4.15+: use timer_flag */
 					del_timer(&w_timer->dog);
-					w_timer->dog.function =  NULL;
 		/* kernel 4.15+: timer_list.data removed */
 					w_timer->timer_flag &= ~HFC_TIMER_VALID;
 				}

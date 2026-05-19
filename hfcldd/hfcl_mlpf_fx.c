@@ -1213,8 +1213,8 @@ uchar hfc_fx_mlpf_intr(
 	for (i=0 ; i< MAX_CORE_PROBE_FX ; i += (MAX_CORE_PROBE_FX/pp->core_num)) {
 		if ((wk_core = pp->region_arg[pp->rid]->core_arg[i]) == NULL)
 			continue;
-			
-			hfc_fx_hand2_trace(HFC_FX_TRC_MLPF_INT, 0x20, pp, pp->region_arg[pp->rid], wk_core, NULL, NULL, hyp_int_core_detail[i], hyp_status, 0);	/* FCLNX-GPL-393 */	/* FCLNX-GPL-FX-414 */
+		
+		hfc_fx_hand2_trace(HFC_FX_TRC_MLPF_INT, 0x20, pp, pp->region_arg[pp->rid], wk_core, NULL, NULL, hyp_int_core_detail[i], hyp_status, 0);	/* FCLNX-GPL-393 */	/* FCLNX-GPL-FX-414 */
 			
 			if(hyp_int_core_detail[i] & HFC_HG_HYPINTDET_CSTP_END)
 				hfc_fx_mlpf_hwerr_int_detail(pp, wk_core, hyp_status, (hyp_int_core_detail[i] & HFC_HG_HYPINTDET_CSTP_END));	/* FCLNX-GPL-FX-386,414 */

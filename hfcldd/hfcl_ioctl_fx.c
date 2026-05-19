@@ -1047,7 +1047,7 @@ void hfc_fx_ioctl_iodone( struct scsi_cmnd *cmnd ) {
  *
  * Notes:       
  */
-void hfc_fx_ioctl_sleep( struct scsi_cmnd *cmnd ) {
+static void hfc_fx_ioctl_sleep( struct scsi_cmnd *cmnd ) {
 	struct port_info *pp;
 
 	pp = (struct port_info *)CMND_HOSTDATA(cmnd);
@@ -1300,10 +1300,7 @@ int hfc_fx_inquiry( struct port_info *pp, void *arg ) {
 		return ENOMEM;
 	}
 	
-	if( cmnd->cmnd == NULL ){
-		HFC_DBGPRT( "ioctl error(trcid=0x%04x, subid=0x%04x) \n", HFC_TRC_IOCTL_SC_INQ, 0x07 );
-		return ENOMEM;
-	}
+	/* kernel 4.x+: cmnd is fixed array; NULL check removed */
 	
 	if( cmnd->device == NULL ){
 		HFC_DBGPRT( "ioctl error(trcid=0x%04x, subid=0x%04x) \n", HFC_TRC_IOCTL_SC_INQ, 0x08 );
@@ -1594,10 +1591,7 @@ int hfc_fx_sciocmd( struct port_info *pp, void *arg, int internal, int timeout) 
 		return ENOMEM;
 	}
 	
-	if( cmnd->cmnd == NULL ){
-		HFC_DBGPRT( "ioctl error(trcid=0x%04x, subid=0x%04x) \n", HFC_TRC_IOCTL_SC_INQ, 0x07 );
-		return ENOMEM;
-	}
+	/* kernel 4.x+: cmnd is fixed array; NULL check removed */
 	
 	if( cmnd->device == NULL ){
 		HFC_DBGPRT( "ioctl error(trcid=0x%04x, subid=0x%04x) \n", HFC_TRC_IOCTL_SC_INQ, 0x08 );
