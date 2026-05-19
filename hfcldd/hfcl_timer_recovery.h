@@ -52,7 +52,8 @@ extern int hfc_mck_port_recovery(struct adap_info	*ap);
 
 extern void hfc_chk_stop(struct adap_info *ap, uchar lock);		/* FCLNX-0279 */
 
-extern void hfc_watchdog(struct wtimer *w_timer);
+/* kernel 4.15+: timer callback uses struct timer_list * */
+extern void hfc_watchdog(struct timer_list *t);
 
 extern void hfc_reset_start(struct adap_info *,uchar); 
 

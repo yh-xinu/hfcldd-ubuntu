@@ -7749,7 +7749,7 @@ int hfc_fx_watchdog_enter(struct port_info *pp,
 			mod_timer_pending(&w_timer->dog, jiffies + d_time);			/* FCLNX-GPL-FX-299 */
 			return (0);
 		}
-		init_timer(&w_timer->dog);
+		timer_setup(&w_timer->dog, hfc_fx_watchdog, 0);
 		
 		if(!(&w_timer->dog))
 		{        
@@ -7771,8 +7771,8 @@ int hfc_fx_watchdog_enter(struct port_info *pp,
 				w_timer->dev = hfc_fx_search_dev_info(target, lun);
 		}
 		w_timer->dog.expires = jiffies + d_time;
-		w_timer->dog.data = (unsigned long) w_timer;
-		w_timer->dog.function = (void (*) (unsigned long))hfc_fx_watchdog;
+		/* kernel 4.15+: timer_list.data removed */
+		/* kernel 4.15+: callback set by timer_setup */
 		w_timer->timer_flag |= HFC_TIMER_VALID;
 		switch (timer_id)										/* FCLNX-0312 */
 		{
@@ -8040,7 +8040,7 @@ int hfc_fx_watchdog_enter(struct port_info *pp,
 		if (w_timer->dog.function != NULL) {
 			del_timer(&w_timer->dog);
 			w_timer->dog.function =  NULL;
-			w_timer->dog.data = (unsigned long) NULL;
+		/* kernel 4.15+: timer_list.data removed */
 			w_timer->timer_flag &= ~HFC_TIMER_VALID;
 			if( timer_id != HFC_FX_SCSI_CMD_TMR ){
 				HFC_DBGPRT("watchdog_enter() - stop timer_id = %d\n",timer_id);
@@ -8553,7 +8553,8 @@ void *hfc_fx_pci_alloc_consistent(struct port_info *pp, struct pci_dev *pdev,
 {
 	void *addr = NULL;
 	
-	addr = pci_alloc_consistent(pdev, size, dma_addrp);
+	/* kernel 5.18+: pci_alloc_consistent removed */
+	addr = dma_alloc_coherent(&pdev->dev, size, dma_addrp, GFP_KERNEL);
 	
 	/* Always count up. */
 	atomic_inc(&hfc_manage_info.pci_alloc_cnt);
@@ -8611,7 +8612,8 @@ void hfc_fx_pci_free_consistent(struct port_info *pp, struct pci_dev *pdev,
 	/* Always count down. */
 	atomic_dec(&hfc_manage_info.pci_alloc_cnt);
 	
-	pci_free_consistent(pdev, size, cpu_addr, dma_addr);
+	/* kernel 5.18+: pci_free_consistent removed */
+	dma_free_coherent(&pdev->dev, size, cpu_addr, dma_addr);
 	return;
 }
 
@@ -8921,7 +8923,7 @@ void hfc_fx_hba_port_statistics_new(
 {
 	ulong				seconds;
 
-	seconds = get_seconds();
+	seconds = ktime_get_real_seconds();
 
 	if (seconds < pp->reset_stat_time)
 		pp->port_statistics.seconds_since_last_reset = (uint64_t)((uint64_t)seconds - ((uint64_t)1 + (uint64_t)pp->reset_stat_time));
@@ -9027,7 +9029,7 @@ int hfc_fx_mp_watchdog_enter( struct port_info *pp, struct core_info *core, stru
 								w_timer = &dev->lun_delay_wdog; 
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 									return (1); 					/* It doesn't stop */
-								init_timer(&dev->lun_delay_wdog.dog); 
+								timer_setup(&dev->lun_delay_wdog.dog, hfc_fx_watchdog, 0); 
 								break;
 			/* FCLNX-GPL-FX-014 Start */
 			case HFC_FX_TOTAL_ABORT_TMR:
@@ -9037,7 +9039,7 @@ int hfc_fx_mp_watchdog_enter( struct port_info *pp, struct core_info *core, stru
 								w_timer = &dev->total_abort_wdog; 
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 									return (1); 					/* It doesn't stop */
-								init_timer(&dev->total_abort_wdog.dog); 
+								timer_setup(&dev->total_abort_wdog.dog, hfc_fx_watchdog, 0); 
 								break;
 			/* FCLNX-GPL-FX-014 End */
 			case HFC_FX_PATH_RETRY_TMR:			/* HFC-PCM */
@@ -9047,7 +9049,7 @@ int hfc_fx_mp_watchdog_enter( struct port_info *pp, struct core_info *core, stru
 								w_timer = &dev->path_retry_wdog; 
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 									return (1); 					/* It doesn't stop */
-								init_timer(&dev->path_retry_wdog.dog); 
+								timer_setup(&dev->path_retry_wdog.dog, hfc_fx_watchdog, 0); 
 								break;
 
 			default :
@@ -9066,8 +9068,8 @@ int hfc_fx_mp_watchdog_enter( struct port_info *pp, struct core_info *core, stru
 		w_timer->hfcpk = hfcp;
 		w_timer->dev = dev;
 		w_timer->dog.expires = jiffies + d_time;
-		w_timer->dog.data = (unsigned long) w_timer;
-		w_timer->dog.function = (void (*) (unsigned long))hfc_fx_watchdog;
+		/* kernel 4.15+: timer_list.data removed */
+		/* kernel 4.15+: callback set by timer_setup */
 		w_timer->timer_flag |= HFC_TIMER_VALID;
 		add_timer(&w_timer->dog);
 
@@ -9087,7 +9089,7 @@ int hfc_fx_mp_watchdog_enter( struct port_info *pp, struct core_info *core, stru
 				if (w_timer->dog.function != NULL) {
 					del_timer(&w_timer->dog);
 					w_timer->dog.function =  NULL;
-					w_timer->dog.data = (unsigned long) NULL;
+		/* kernel 4.15+: timer_list.data removed */
 					w_timer->timer_flag &= ~HFC_TIMER_VALID;
 				}
 				break;
@@ -9105,7 +9107,7 @@ int hfc_fx_mp_watchdog_enter( struct port_info *pp, struct core_info *core, stru
 				if (w_timer->dog.function != NULL) {
 					del_timer(&w_timer->dog);
 					w_timer->dog.function =  NULL;
-					w_timer->dog.data = (unsigned long) NULL;
+		/* kernel 4.15+: timer_list.data removed */
 					w_timer->timer_flag &= ~HFC_TIMER_VALID;
 				}
 				break;
@@ -9122,7 +9124,7 @@ int hfc_fx_mp_watchdog_enter( struct port_info *pp, struct core_info *core, stru
 				if (w_timer->dog.function != NULL) {
 					del_timer(&w_timer->dog);
 					w_timer->dog.function =  NULL;
-					w_timer->dog.data = (unsigned long) NULL;
+		/* kernel 4.15+: timer_list.data removed */
 					w_timer->timer_flag &= ~HFC_TIMER_VALID;
 				}
 				break;

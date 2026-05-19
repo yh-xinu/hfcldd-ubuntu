@@ -2456,7 +2456,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								w_timer = &ap->mb_wdog;
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 									return (1);		
-								init_timer(&ap->mb_wdog.dog);
+								timer_setup(&ap->mb_wdog.dog, hfc_watchdog, 0);
 								ap->mb_retry_tid = timer_id;
 								break;
 
@@ -2465,7 +2465,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								w_timer = &ap->mb_wdog;
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 									return (1);		
-								init_timer(&w_timer->dog);
+								timer_setup(&w_timer->dog, hfc_watchdog, 0);
 								ap->mb_retry_tid = timer_id;
 								break;
 
@@ -2482,7 +2482,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								w_timer = &ap->mb_wdog;
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 									return (1);		
-								init_timer(&ap->mb_wdog.dog);
+								timer_setup(&ap->mb_wdog.dog, hfc_watchdog, 0);
 								ap->mb_retry_tid = timer_id;
 								break;
 
@@ -2495,7 +2495,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								w_timer = &ap->reboot_wdog;
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 									return (1);		
-								init_timer(&ap->reboot_wdog.dog);
+								timer_setup(&ap->reboot_wdog.dog, hfc_watchdog, 0);
 								break;
 
 			case HFC_MCK_DELAY_TMR :	
@@ -2503,7 +2503,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								w_timer = &ap->mck_wdog;
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 									return (1);		
-								init_timer(&ap->mck_wdog.dog);
+								timer_setup(&ap->mck_wdog.dog, hfc_watchdog, 0);
 								break;
 
 			case HFC_MCKINT_TMR :												/* FCLNX-0275 */
@@ -2511,7 +2511,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								w_timer = &ap->mckint_wdog;
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 									return (1);		
-								init_timer(&ap->mckint_wdog.dog);
+								timer_setup(&ap->mckint_wdog.dog, hfc_watchdog, 0);
 								break;											/* FCLNX-0275 */
 /* @MLPF */
 			case HFC_MLPF_FMCK_TMR :    /* Shadow LPAR only */
@@ -2520,7 +2520,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								w_timer = &ap->fmck_wdog;
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 									return (1);
-								init_timer(&ap->fmck_wdog.dog);
+								timer_setup(&ap->fmck_wdog.dog, hfc_watchdog, 0);
 								break;
 			case  HFC_MLPF_MCKEND_TMR :
 								if( HFC_MMODE_CHECK_SHADOW(ap) )
@@ -2530,7 +2530,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								w_timer = &ap->mckend_wdog;
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 									return (1);
-								init_timer(&ap->mckend_wdog.dog);
+								timer_setup(&ap->mckend_wdog.dog, hfc_watchdog, 0);
 								break;
 			case  HFC_MLPF_FCSTP_TMR :  /* Shadow LPAR only */
 								d_time = (HFC_MLPF_FCSTP_STO * HZ);
@@ -2538,55 +2538,55 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								w_timer = &ap->fcstp_wdog;
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 									return (1);
-								init_timer(&ap->fcstp_wdog.dog);
+								timer_setup(&ap->fcstp_wdog.dog, hfc_watchdog, 0);
 								break;
 
 			case HFC_LUN0_TMR :
 								d_time = (HFC_LOOP_TEST_TO * HZ);
 								w_timer = &ap->loop_dev_info[0].loop_wdog;
-								init_timer(&w_timer->dog);
+								timer_setup(&w_timer->dog, hfc_watchdog, 0);
 								break;
 
 			case HFC_LUN1_TMR :	
 								d_time = (HFC_LOOP_TEST_TO * HZ);
 								w_timer = &ap->loop_dev_info[1].loop_wdog;
-								init_timer(&w_timer->dog);
+								timer_setup(&w_timer->dog, hfc_watchdog, 0);
 								break;
 
 			case HFC_LUN2_TMR :	
 								d_time = (HFC_LOOP_TEST_TO * HZ);
 								w_timer = &ap->loop_dev_info[2].loop_wdog;
-								init_timer(&w_timer->dog);
+								timer_setup(&w_timer->dog, hfc_watchdog, 0);
 								break;
 
 			case HFC_LUN3_TMR :	
 								d_time = (HFC_LOOP_TEST_TO * HZ);
 								w_timer = &ap->loop_dev_info[3].loop_wdog;
-								init_timer(&w_timer->dog);
+								timer_setup(&w_timer->dog, hfc_watchdog, 0);
 								break;
 
 			case HFC_LUN4_TMR :	
 								d_time = (HFC_LOOP_TEST_TO * HZ);
 								w_timer = &ap->loop_dev_info[4].loop_wdog;
-								init_timer(&w_timer->dog);
+								timer_setup(&w_timer->dog, hfc_watchdog, 0);
 								break;
 
 			case HFC_LUN5_TMR :	
 								d_time = (HFC_LOOP_TEST_TO * HZ);
 								w_timer = &ap->loop_dev_info[5].loop_wdog;
-								init_timer(&w_timer->dog);
+								timer_setup(&w_timer->dog, hfc_watchdog, 0);
 								break;
 
 			case HFC_LUN6_TMR :	
 								d_time = (HFC_LOOP_TEST_TO * HZ);
 								w_timer = &ap->loop_dev_info[6].loop_wdog;
-								init_timer(&w_timer->dog);
+								timer_setup(&w_timer->dog, hfc_watchdog, 0);
 								break;
 
 			case HFC_LUN7_TMR :	
 								d_time = (HFC_LOOP_TEST_TO * HZ);
 								w_timer = &ap->loop_dev_info[7].loop_wdog;
-								init_timer(&w_timer->dog);
+								timer_setup(&w_timer->dog, hfc_watchdog, 0);
 								break;
 
 			case HFC_LINKUP_TMR	:		
@@ -2604,7 +2604,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								w_timer = &ap->linkup_wdog;
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 									return (1);		
-								init_timer(&ap->linkup_wdog.dog);
+								timer_setup(&ap->linkup_wdog.dog, hfc_watchdog, 0);
 								break;
 
 			case HFC_LINKUP2_TMR    :												/* FCLNX-241 */
@@ -2612,7 +2612,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								w_timer = &ap->linkup_wdog;
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 									return (1); 		
-								init_timer(&ap->linkup_wdog.dog);
+								timer_setup(&ap->linkup_wdog.dog, hfc_watchdog, 0);
 								break;												/* FCLNX-241 */
 
 			case HFC_WLINKUP_CNT_TMR    :											/* FCLNX-GPL-FX-424 */
@@ -2620,7 +2620,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								w_timer = &ap->ld_err_wdog;
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 									return (1); 		
-								init_timer(&ap->ld_err_wdog.dog);
+								timer_setup(&ap->ld_err_wdog.dog, hfc_watchdog, 0);
 								break;												/* FCLNX-241 */
 
 			case HFC_SCN_LINKUP_TMR	: 			
@@ -2640,7 +2640,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								w_timer = &target->scnlinkup_wdog;
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 									return (1);		
-								init_timer(&target->scnlinkup_wdog.dog);
+								timer_setup(&target->scnlinkup_wdog.dog, hfc_watchdog, 0);
 								break;
 
 			case HFC_DELAY_TMR :
@@ -2651,7 +2651,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								w_timer = &target->delay_wdog;
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 									return (1);		/* It doesn't stop */
-								init_timer(&target->delay_wdog.dog);
+								timer_setup(&target->delay_wdog.dog, hfc_watchdog, 0);
 								break;
 
 			case HFC_WEXEC_TMR :
@@ -2662,7 +2662,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								w_timer = &target->wexec_wdog;
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 									return (1);		/* It doesn't stop */
-								init_timer(&target->wexec_wdog.dog);
+								timer_setup(&target->wexec_wdog.dog, hfc_watchdog, 0);
 								break;
 
 			case HFC_TARGET_RST_TMR :
@@ -2675,7 +2675,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								w_timer = &hfcp->cmd_timeout;
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 									return (1);		/* It doesn't stop */
-								init_timer(&hfcp->cmd_timeout.dog);
+								timer_setup(&hfcp->cmd_timeout.dog, hfc_watchdog, 0);
 								break;
 
 			case HFC_ABORT_TMR :
@@ -2694,7 +2694,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								w_timer = &hfcp->cmd_timeout;
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 									return (1);		/* It doesn't stop */
-								init_timer(&hfcp->cmd_timeout.dog);
+								timer_setup(&hfcp->cmd_timeout.dog, hfc_watchdog, 0);
 								break;
 
 			case HFC_SCSI_CMD_TMR :
@@ -2705,7 +2705,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								w_timer = &hfcp->cmd_timeout;
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 									return (1);		/* It doesn't stop */
-								init_timer(&hfcp->cmd_timeout.dog);
+								timer_setup(&hfcp->cmd_timeout.dog, hfc_watchdog, 0);
 								break;
 
 			case HFC_DIAG_DELAY_TMR :
@@ -2713,7 +2713,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								w_timer = &ap->reboot_wdog;
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 									return (1);		
-								init_timer(&ap->reboot_wdog.dog);
+								timer_setup(&ap->reboot_wdog.dog, hfc_watchdog, 0);
 								break;
 
 			case HFC_MPAP_LOCK_TMR:
@@ -2721,7 +2721,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								w_timer = &ap->mpap_lock_wdog;
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 									return (1);		
-								init_timer(&ap->mpap_lock_wdog.dog);
+								timer_setup(&ap->mpap_lock_wdog.dog, hfc_watchdog, 0);
 								break;
 
 			case HFC_LOGIN_DELAY_TMR:												/* FCLNX-0243 */
@@ -2729,35 +2729,35 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								w_timer = &ap->lgdelay_wdog;						/* FCLNX-0270 */
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 								return (1); 			/* It doesn't stop */
-								init_timer(&ap->lgdelay_wdog.dog);					/* FCLNX-0270 */
+								timer_setup(&ap->lgdelay_wdog.dog, hfc_watchdog, 0);					/* FCLNX-0270 */
 								break;  											/* FCLNX-0243 */
 			case HFC_LDLERR_TMR:
 				 				d_time = (ap->ldl_errcnt_info->current_tmr_time * HZ);
 								w_timer = &ap->ldlerr_wdog; /* FCLNX-0506 */
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 									return (1); 					/* It doesn't stop */
-								init_timer(&ap->ldlerr_wdog.dog); /* FCLNX-0506 */
+								timer_setup(&ap->ldlerr_wdog.dog, hfc_watchdog, 0); /* FCLNX-0506 */
 								break;
 			case HFC_LDSERR_TMR:
 								d_time = (ap->lds_errcnt_info->current_tmr_time * HZ);
 								w_timer = &ap->ldserr_wdog; /* FCLNX-0506 */
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 									return (1); 					/* It doesn't stop */
-								init_timer(&ap->ldserr_wdog.dog); /* FCLNX-0506 */
+								timer_setup(&ap->ldserr_wdog.dog, hfc_watchdog, 0); /* FCLNX-0506 */
 								break;
 			case HFC_IFERR_TMR:
 								d_time = (ap->if_errcnt_info->current_tmr_time * HZ);
 								w_timer = &ap->iferr_wdog; /* FCLNX-0506 */
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 									return (1); 					/* It doesn't stop */
-								init_timer(&ap->iferr_wdog.dog); /* FCLNX-0506 */
+								timer_setup(&ap->iferr_wdog.dog, hfc_watchdog, 0); /* FCLNX-0506 */
 								break;
 			case HFC_TOERR_TMR:
 								d_time = (ap->to_errcnt_info->current_tmr_time * HZ);
 								w_timer = &ap->toerr_wdog; /* FCLNX-0506 */
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 									return (1); 					/* It doesn't stop */
-								init_timer(&ap->toerr_wdog.dog); /* FCLNX-0506 */
+								timer_setup(&ap->toerr_wdog.dog, hfc_watchdog, 0); /* FCLNX-0506 */
 								break;
 			case HFC_ISOLATE_DELAY_TMR:
 								if (tout)										/* FCLNX-0279 */
@@ -2767,14 +2767,14 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								w_timer = &ap->fwisol_wdog;
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 									return (1);		
-								init_timer(&ap->fwisol_wdog.dog);
+								timer_setup(&ap->fwisol_wdog.dog, hfc_watchdog, 0);
 								break;
 			case HFC_INT_CHECK_TMR:												/* FCLNX-GPL-306 */
 								d_time = 1 * HZ;
 								w_timer = &ap->int_chk_wdog;
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 									return (1);		
-								init_timer(&ap->int_chk_wdog.dog);
+								timer_setup(&ap->int_chk_wdog.dog, hfc_watchdog, 0);
 								break;
 			case HFC_TGT_LDLERR_TMR:												/* FCLNX-GPL-327 */
 								if ( target == NULL )
@@ -2783,7 +2783,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								w_timer = &target->tgt_ldlerr_wdog;
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 									return (1);		
-								init_timer(&target->tgt_ldlerr_wdog.dog);
+								timer_setup(&target->tgt_ldlerr_wdog.dog, hfc_watchdog, 0);
 								break;
 			case HFC_TGT_LDSERR_TMR:												/* FCLNX-GPL-327 */
 								if ( target == NULL )
@@ -2792,7 +2792,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								w_timer = &target->tgt_ldserr_wdog;
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 									return (1);
-								init_timer(&target->tgt_ldserr_wdog.dog);
+								timer_setup(&target->tgt_ldserr_wdog.dog, hfc_watchdog, 0);
 								break;
 			case HFC_RESTART_TMR:												/* FCLNX-GPL-328 */
 								if ( target == NULL )
@@ -2802,7 +2802,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								w_timer = &target->restart_wdog;
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 									return (1);		/* It doesn't stop */
-								init_timer(&target->restart_wdog.dog);
+								timer_setup(&target->restart_wdog.dog, hfc_watchdog, 0);
 								break;											/* FCLNX-GPL-328 */
 			case HFC_MLPF_ISOLEND_TMR:
 								if (tout)										/* FCLNX-0279 */
@@ -2812,7 +2812,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								w_timer = &ap->isolend_wdog;
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 									return (1);		
-								init_timer(&ap->isolend_wdog.dog);
+								timer_setup(&ap->isolend_wdog.dog, hfc_watchdog, 0);
 								break;
 			default :
 								return (2);			/* Invalid TIMER ID		*/
@@ -2831,8 +2831,8 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 			w_timer->dev = hfcp->dev;							/* FCLNX-GPL-047 *//* FCLNX-GPL-0343 */
 		}
 		w_timer->dog.expires = jiffies + d_time;
-		w_timer->dog.data = (unsigned long) w_timer;
-		w_timer->dog.function = (void (*) (unsigned long))hfc_watchdog;
+		/* kernel 4.15+: timer_list.data removed */
+		/* kernel 4.15+: callback set by timer_setup; explicit assign removed */
 		w_timer->timer_flag |= HFC_TIMER_VALID;
 		switch (timer_id)										/* FCLNX-0312 */
 		{
@@ -2866,7 +2866,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								if (w_timer->dog.function != NULL) {
 									del_timer(&w_timer->dog);
 									w_timer->dog.function =  NULL;
-									w_timer->dog.data = (unsigned long) NULL;
+			/* kernel 4.15+: timer_list.data removed */
 									w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;
@@ -2878,7 +2878,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								if (w_timer->dog.function != NULL) {
 									del_timer(&w_timer->dog);
 									w_timer->dog.function =  NULL;
-									w_timer->dog.data = (unsigned long) NULL;
+			/* kernel 4.15+: timer_list.data removed */
 									w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;
@@ -2888,7 +2888,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								if (w_timer->dog.function != NULL) {
 									del_timer(&w_timer->dog);
 									w_timer->dog.function =  NULL;
-									w_timer->dog.data = (unsigned long) NULL;
+			/* kernel 4.15+: timer_list.data removed */
 									w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;
@@ -2898,7 +2898,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								if (w_timer->dog.function != NULL) {
 									del_timer(&w_timer->dog);
 									w_timer->dog.function =  NULL;
-									w_timer->dog.data = (unsigned long) NULL;
+			/* kernel 4.15+: timer_list.data removed */
 									w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;												/* FCLNX-0275 */
@@ -2908,7 +2908,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								if (w_timer->dog.function != NULL) {
 									del_timer(&w_timer->dog);
 									w_timer->dog.function =  NULL;
-									w_timer->dog.data = (unsigned long) NULL;
+			/* kernel 4.15+: timer_list.data removed */
 									w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;
@@ -2918,7 +2918,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								if (w_timer->dog.function != NULL) {
 									del_timer(&w_timer->dog);
 									w_timer->dog.function =  NULL;
-									w_timer->dog.data = (unsigned long) NULL;
+			/* kernel 4.15+: timer_list.data removed */
 									w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;
@@ -2928,7 +2928,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								if (w_timer->dog.function != NULL) {
 									del_timer(&w_timer->dog);
 									w_timer->dog.function =  NULL;
-									w_timer->dog.data = (unsigned long) NULL;
+			/* kernel 4.15+: timer_list.data removed */
 									w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;
@@ -2941,7 +2941,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								if (w_timer->dog.function != NULL) {
 									del_timer(&w_timer->dog);
 									w_timer->dog.function =  NULL;
-									w_timer->dog.data = (unsigned long) NULL;
+			/* kernel 4.15+: timer_list.data removed */
 									w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;
@@ -2954,7 +2954,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								if (w_timer->dog.function != NULL) {
 									del_timer(&w_timer->dog);
 									w_timer->dog.function =  NULL;
-									w_timer->dog.data = (unsigned long) NULL;
+			/* kernel 4.15+: timer_list.data removed */
 									w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;
@@ -2967,7 +2967,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								if (w_timer->dog.function != NULL) {
 									del_timer(&w_timer->dog);
 									w_timer->dog.function =  NULL;
-									w_timer->dog.data = (unsigned long) NULL;
+			/* kernel 4.15+: timer_list.data removed */
 									w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;
@@ -2980,7 +2980,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								if (w_timer->dog.function != NULL) {
 									del_timer(&w_timer->dog);
 									w_timer->dog.function =  NULL;
-									w_timer->dog.data = (unsigned long) NULL;
+			/* kernel 4.15+: timer_list.data removed */
 									w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;
@@ -2993,7 +2993,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								if (w_timer->dog.function != NULL) {
 									del_timer(&w_timer->dog);
 									w_timer->dog.function =  NULL;
-									w_timer->dog.data = (unsigned long) NULL;
+			/* kernel 4.15+: timer_list.data removed */
 									w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;
@@ -3005,7 +3005,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								if (w_timer->dog.function != NULL) {
 									del_timer(&w_timer->dog);
 									w_timer->dog.function =  NULL;
-									w_timer->dog.data = (unsigned long) NULL;
+			/* kernel 4.15+: timer_list.data removed */
 									w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;
@@ -3018,7 +3018,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								if (w_timer->dog.function != NULL) {
 									del_timer(&w_timer->dog);
 									w_timer->dog.function =  NULL;
-									w_timer->dog.data = (unsigned long) NULL;
+			/* kernel 4.15+: timer_list.data removed */
 									w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;
@@ -3031,7 +3031,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								if (w_timer->dog.function != NULL) {
 									del_timer(&w_timer->dog);
 									w_timer->dog.function =  NULL;
-									w_timer->dog.data = (unsigned long) NULL;
+			/* kernel 4.15+: timer_list.data removed */
 									w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;
@@ -3042,7 +3042,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								if (w_timer->dog.function != NULL) {
 									del_timer(&w_timer->dog);
 									w_timer->dog.function =  NULL;
-									w_timer->dog.data = (unsigned long) NULL;
+			/* kernel 4.15+: timer_list.data removed */
 									w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;
@@ -3052,7 +3052,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								if (w_timer->dog.function != NULL) {
 									del_timer(&w_timer->dog);
 									w_timer->dog.function =  NULL;
-									w_timer->dog.data = (unsigned long) NULL;
+			/* kernel 4.15+: timer_list.data removed */
 									w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;
@@ -3062,7 +3062,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								if (w_timer->dog.function != NULL) {
 									del_timer(&w_timer->dog);
 									w_timer->dog.function =  NULL;
-									w_timer->dog.data = (unsigned long) NULL;
+			/* kernel 4.15+: timer_list.data removed */
 									w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;												/* FCLNX-241 */
@@ -3072,7 +3072,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								if (w_timer->dog.function != NULL) {
 									del_timer(&w_timer->dog);
 									w_timer->dog.function =  NULL;
-									w_timer->dog.data = (unsigned long) NULL;
+			/* kernel 4.15+: timer_list.data removed */
 									w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;
@@ -3082,7 +3082,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								if (w_timer->dog.function != NULL) {
 									del_timer(&w_timer->dog);
 									w_timer->dog.function =  NULL;
-									w_timer->dog.data = (unsigned long) NULL;
+			/* kernel 4.15+: timer_list.data removed */
 									w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;
@@ -3098,7 +3098,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								if (w_timer->dog.function != NULL) {
 									del_timer(&w_timer->dog);
 									w_timer->dog.function =  NULL;
-									w_timer->dog.data = (unsigned long) NULL;
+			/* kernel 4.15+: timer_list.data removed */
 									w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;
@@ -3115,7 +3115,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 									if( w_timer->timer_flag & HFC_TIMER_VALID )
 										del_timer(&w_timer->dog);
 									w_timer->dog.function =  NULL;
-									w_timer->dog.data = (unsigned long) NULL;
+			/* kernel 4.15+: timer_list.data removed */
 									w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;
@@ -3131,7 +3131,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 									if( w_timer->timer_flag & HFC_TIMER_VALID )
 										del_timer(&w_timer->dog);
 									w_timer->dog.function =  NULL;
-									w_timer->dog.data = (unsigned long) NULL;
+			/* kernel 4.15+: timer_list.data removed */
 									w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;
@@ -3144,7 +3144,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								if (w_timer->dog.function != NULL) {
 									del_timer(&w_timer->dog);
 									w_timer->dog.function =  NULL;
-									w_timer->dog.data = (unsigned long) NULL;
+			/* kernel 4.15+: timer_list.data removed */
 									w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;
@@ -3158,7 +3158,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								if (w_timer->dog.function != NULL) {
 								del_timer(&w_timer->dog);
 								w_timer->dog.function =  NULL;
-								w_timer->dog.data = (unsigned long) NULL;
+		/* kernel 4.15+: timer_list.data removed */
 								w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;													/* FCLNX-0243 */
@@ -3170,7 +3170,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								if (w_timer->dog.function != NULL) {
 									del_timer(&w_timer->dog);
 									w_timer->dog.function =  NULL;
-									w_timer->dog.data = (unsigned long) NULL;
+			/* kernel 4.15+: timer_list.data removed */
 									w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;
@@ -3182,7 +3182,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								if (w_timer->dog.function != NULL) {
 									del_timer(&w_timer->dog);
 									w_timer->dog.function =  NULL;
-									w_timer->dog.data = (unsigned long) NULL;
+			/* kernel 4.15+: timer_list.data removed */
 									w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;
@@ -3194,7 +3194,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								if (w_timer->dog.function != NULL) {
 									del_timer(&w_timer->dog);
 									w_timer->dog.function =  NULL;
-									w_timer->dog.data = (unsigned long) NULL;
+			/* kernel 4.15+: timer_list.data removed */
 									w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;
@@ -3206,7 +3206,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								if (w_timer->dog.function != NULL) {
 									del_timer(&w_timer->dog);
 									w_timer->dog.function =  NULL;
-									w_timer->dog.data = (unsigned long) NULL;
+			/* kernel 4.15+: timer_list.data removed */
 									w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;
@@ -3215,7 +3215,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								if (w_timer->dog.function != NULL) {
 									del_timer(&w_timer->dog);
 									w_timer->dog.function =  NULL;
-									w_timer->dog.data = (unsigned long) NULL;
+			/* kernel 4.15+: timer_list.data removed */
 									w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;
@@ -3224,7 +3224,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								if (w_timer->dog.function != NULL) {
 									del_timer(&w_timer->dog);
 									w_timer->dog.function =  NULL;
-									w_timer->dog.data = (unsigned long) NULL;
+			/* kernel 4.15+: timer_list.data removed */
 									w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;
@@ -3236,7 +3236,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								if (w_timer->dog.function != NULL) {
 									del_timer(&w_timer->dog);
 									w_timer->dog.function =  NULL;
-									w_timer->dog.data = (unsigned long) NULL;
+			/* kernel 4.15+: timer_list.data removed */
 									w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;
@@ -3248,7 +3248,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								if (w_timer->dog.function != NULL) {
 									del_timer(&w_timer->dog);
 									w_timer->dog.function =  NULL;
-									w_timer->dog.data = (unsigned long) NULL;
+			/* kernel 4.15+: timer_list.data removed */
 									w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;
@@ -3259,7 +3259,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								if (w_timer->dog.function != NULL) {
 									del_timer(&w_timer->dog);
 									w_timer->dog.function =  NULL;
-									w_timer->dog.data = (unsigned long) NULL;
+			/* kernel 4.15+: timer_list.data removed */
 									w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;	/* FCLNX-GPL-328 */
@@ -3268,7 +3268,7 @@ int hfc_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								if (w_timer->dog.function != NULL) {
 									del_timer(&w_timer->dog);
 									w_timer->dog.function =  NULL;
-									w_timer->dog.data = (unsigned long) NULL;
+			/* kernel 4.15+: timer_list.data removed */
 									w_timer->timer_flag &= ~HFC_TIMER_VALID;
 								}
 								break;
@@ -3758,7 +3758,8 @@ void *hfc_pci_alloc_consistent(struct adap_info *ap, struct pci_dev *pdev,
 {
 	void *addr = NULL;
 	
-	addr = pci_alloc_consistent(pdev, size, dma_addrp);
+	/* kernel 5.18+: pci_alloc_consistent removed; use dma_alloc_coherent */
+	addr = dma_alloc_coherent(&pdev->dev, size, dma_addrp, GFP_KERNEL);
 	
 	/* Always count up. */
 	atomic_inc(&hfc_manage_info.pci_alloc_cnt);
@@ -3816,7 +3817,8 @@ void hfc_pci_free_consistent(struct adap_info *ap, struct pci_dev *pdev,
 	/* Always count down. */
 	atomic_dec(&hfc_manage_info.pci_alloc_cnt);
 	
-	pci_free_consistent(pdev, size, cpu_addr, dma_addr);
+	/* kernel 5.18+: pci_free_consistent removed; use dma_free_coherent */
+	dma_free_coherent(&pdev->dev, size, cpu_addr, dma_addr);
 	return;
 }
 
@@ -4126,7 +4128,7 @@ void hfc_hba_port_statistics_new(
 {
 	ulong				seconds;
 
-	seconds = get_seconds();
+	seconds = ktime_get_real_seconds();
 
 	if (seconds < ap->reset_stat_time)
 		ap->port_statistics.seconds_since_last_reset = (uint64_t)seconds - ((uint64_t)1 + (uint64_t)ap->reset_stat_time);
@@ -4232,7 +4234,7 @@ int hfc_mp_watchdog_enter( struct adap_info *ap, struct target_info *target,
 								w_timer = &dev->lun_delay_wdog; 
 								if( w_timer->timer_flag & HFC_TIMER_VALID )
 									return (1); 					/* It doesn't stop */
-								init_timer(&dev->lun_delay_wdog.dog); 
+								timer_setup(&dev->lun_delay_wdog.dog, hfc_watchdog, 0); 
 								break;
 
 			default :
@@ -4250,8 +4252,8 @@ int hfc_mp_watchdog_enter( struct adap_info *ap, struct target_info *target,
 		w_timer->hfcpk = hfcp;
 		w_timer->dev = dev;
 		w_timer->dog.expires = jiffies + d_time;
-		w_timer->dog.data = (unsigned long) w_timer;
-		w_timer->dog.function = (void (*) (unsigned long))hfc_watchdog;
+		/* kernel 4.15+: timer_list.data removed */
+		/* kernel 4.15+: callback set by timer_setup; explicit assign removed */
 		w_timer->timer_flag |= HFC_TIMER_VALID;
 		add_timer(&w_timer->dog);
 
@@ -4265,13 +4267,11 @@ int hfc_mp_watchdog_enter( struct adap_info *ap, struct target_info *target,
 				w_timer = &dev->lun_delay_wdog;
 				if( (w_timer != NULL) && (w_timer->timer_flag & HFC_TIMER_VALID) )
 					return(3);						/* FCLNX-0648 */ /* FCLNX-0657 */
-				if(!(&w_timer->dog)){
-					break;
-				}
+				/* kernel 6.x: &w_timer->dog is always non-NULL (embedded struct); check removed */
 				if (w_timer->dog.function != NULL) {
 					del_timer(&w_timer->dog);
 					w_timer->dog.function =  NULL;
-					w_timer->dog.data = (unsigned long) NULL;
+		/* kernel 4.15+: timer_list.data removed */
 					w_timer->timer_flag &= ~HFC_TIMER_VALID;
 				}
 				break;

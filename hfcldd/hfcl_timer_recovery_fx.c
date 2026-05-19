@@ -3873,8 +3873,10 @@ void hfc_fx_logout(
  *
  * Notes:       
  */
-void hfc_fx_watchdog(struct wtimer_fx *w_timer)
+/* kernel 4.15+: timer callback signature changed to (struct timer_list *) */
+void hfc_fx_watchdog(struct timer_list *t)
 {
+	struct wtimer_fx *w_timer = from_timer(w_timer, t, dog);
 	struct port_info		*pp=NULL, *wk_pp=NULL;
 	struct port_info		*vpp;
 	struct core_info		*core=NULL, *core_wk=NULL;	

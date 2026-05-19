@@ -5112,8 +5112,10 @@ mp_adap_info_lock_fail:
  *
  * Notes:       
  */
-void hfc_watchdog(struct wtimer *w_timer)
+/* kernel 4.15+: timer callback signature changed to (struct timer_list *) */
+void hfc_watchdog(struct timer_list *t)
 {
+	struct wtimer *w_timer = from_timer(w_timer, t, dog);
 	struct adap_info *ap=NULL;
 	struct target_info *target=NULL ;
 	struct hfc_pkt *hfcp=NULL,*wx_hfcp=NULL ;

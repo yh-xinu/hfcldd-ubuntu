@@ -2379,7 +2379,8 @@ struct pub_symbol_list {
 		uint                            err_num,
 		uchar                           *data,
 		ushort                          data_len );/* - FCLNX-546 - */
-	void (*hfc_watchdog) (struct wtimer *w_timer);			/* FCLNX-GPL-038 */
+	/* kernel 4.15+: timer callback signature changed */
+	void (*hfc_watchdog) (struct timer_list *t);			/* FCLNX-GPL-038 */
 	int (*hfc_force_linkdown)(struct adap_info *ap, uchar proc, uchar skip);		/* FCLNX-0542 */
 	int (*hfc_force_linkdown_recovery)(struct adap_info *ap);				/* FCLNX-0542 */
 
@@ -2461,7 +2462,8 @@ struct pub_symbol_list {
 		uint								err_num,
 		uchar								*data,
 		ushort								data_len );/* - FCLNX-546 - */
-	void (*hfc_fx_watchdog) (struct wtimer_fx *w_timer);			/* FCLNX-GPL-038 */
+	/* kernel 4.15+: timer callback signature changed */
+	void (*hfc_fx_watchdog) (struct timer_list *t);			/* FCLNX-GPL-038 */
 	int (*hfc_fx_force_linkdown)(struct port_info *pp, uchar proc);		/* FCLNX-0542 *//* FCLNX-GPL-FX-043 */
 	int (*hfc_fx_force_linkdown_recovery)(struct port_info *pp);					/* FCLNX-0542 */
 

@@ -53,7 +53,8 @@ extern int hfc_fx_mck_port_recovery(struct port_info	*pp);
 
 extern void hfc_fx_chk_stop(struct port_info *pp);
 
-extern void hfc_fx_watchdog(struct wtimer_fx *w_timer);
+/* kernel 4.15+: timer callback uses struct timer_list * */
+extern void hfc_fx_watchdog(struct timer_list *t);
 
 extern void hfc_fx_reset_start(struct port_info *,uchar); 
 
