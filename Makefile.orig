@@ -39,7 +39,7 @@ MAKEDIR=hfcldd_make
 FAKEHBATOOLS=$(HBATOOLS)
 HEADERSDIR=$(FAKEHBATOOLS)/$(HFCLDD)
 HEADERSNAME=hfcldd-headers
-FAKEHFCLDD=$(HFCLDD)_fake
+#FAKEHFCLDD=$(HFCLDD)_fake
 # packaging variables
 PKGNAME=hfcldd
 PKGVER=3
@@ -121,7 +121,7 @@ $(PKGDIR)/DEBIAN:
 
 # modify control informations
 	sed -i "s/^Package:.*/Package: $(PKGDIR)/" $(PKGDIR)/DEBIAN/control 
-	sed -i "s/^Version:.*/Version: $(HFCLDDVER)-$(PKGVER)-$(KERNVER)-$(SIVER)/" $(PKGDIR)/DEBIAN/control
+	 sed -i "s/^Version:.*/Version: $(HFCLDDVER)-$(PKGVER)-$(KERNVER)-$(SIVER)/" $(PKGDIR)/DEBIAN/control
 	sed -i "s/^Maintainer:.*/Maintainer: $(GPL_MAINTAINER)/" $(PKGDIR)/DEBIAN/control
 	sed -i "s/^ENASVERDIR=.*/ENASVERDIR=\"$(KERNVER)-$(SIVER)\"/" $(PKGDIR)/DEBIAN/postinst
 	sed -i "s/^ENASVERDIR=.*/ENASVERDIR=\"$(KERNVER)-$(SIVER)\"/" $(PKGDIR)/DEBIAN/preinst
@@ -154,14 +154,14 @@ $(PKGDIR).deb: \
 # make a debian package
 	dpkg -b $(PKGDIR)
 
-headerstar: $(PKGDIR).deb
-	cp -f $(HFCLDD)/*.h $(HEADERSDIR)
-	tar czvf $(HEADERSTGZ) $(HEADERSDIR)
+#headerstar: $(PKGDIR).deb
+#	cp -f $(HFCLDD)/*.h $(HEADERSDIR)
+#	tar czvf $(HEADERSTGZ) $(HEADERSDIR)
 
-srctar: headerstar
-	cp -Rf $(HFCLDD) tools $(FAKEHFCLDD)/$(HFCLDD)
-	cp tools/scripts/hfcgpl_makedeb0 $(FAKEHFCLDD)/$(HFCLDD)/Makefile
-	cd $(FAKEHFCLDD);tar czvf ../$(PKGDIR).src.tgz $(HFCLDD)
+#srctar: headerstar
+#	cp -Rf $(HFCLDD) tools $(FAKEHFCLDD)/$(HFCLDD)
+#	cp tools/scripts/hfcgpl_makedeb0 $(FAKEHFCLDD)/$(HFCLDD)/Makefile
+#	cd $(FAKEHFCLDD);tar czvf ../$(PKGDIR).src.tgz $(HFCLDD)
 
 srctar: $(PKGDIR).deb
 	cp -Rf $(HFCLDD)/*.h $(HFCLDDSRC)/$(HFCLDD)
@@ -177,7 +177,7 @@ srctar: $(PKGDIR).deb
 	cp Makefile $(HFCLDDSRC)/Makefile
 	cp -f readme_src.txt $(HFCLDDSRC)/readme_src.txt
 	cp -f readme_src_en.txt $(HFCLDDSRC)/readme_src_en.txt
-	cd $(FAKEHFCLDD);tar czvf ../$(PKGDIR).src.tgz $(HFCLDD) tools Makefile readme_src.txt readme_src_en.txt
+#	cd $(FAKEHFCLDD);tar czvf ../$(PKGDIR).src.tgz $(HFCLDD) tools Makefile readme_src.txt readme_src_en.txt
 		
 clean:
 	$(MAKE) -C hfcldd clean
@@ -187,5 +187,5 @@ clean:
 	rm -rf $(FAKEHFCLDD)
 	rm -rf $(PKGDIR).deb
 	rm -rf $(HEADERSTGZ)
-	rm -rf $(PKGDIR).src.tgz
+#	rm -rf $(PKGDIR).src.tgz
 	rm -rf $(HFCLDDSRC)
