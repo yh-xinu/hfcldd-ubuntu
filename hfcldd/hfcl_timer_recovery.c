@@ -1271,7 +1271,11 @@ void hfc_error_common(struct adap_info *ap, hfc_errfmt1_t *err1, struct hfc_pkt 
 	err1->err_xrb.son = ap->xrb[num_work].son ;
 	err1->err_xrb.sbc = ap->xrb[num_work].sbc ;
 	err1->err_xrb.fsb = ap->xrb[num_work].fsb ;
+	/* kernel 6.x: fortify-source field-boundary warning suppression (XRB err_code copy) */
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wattribute-warning"
 	memcpy(err1->err_xrb.err_code,ap->xrb[num_work].err_code,11) ;
+	#pragma GCC diagnostic pop
 
 	return ;
 }
