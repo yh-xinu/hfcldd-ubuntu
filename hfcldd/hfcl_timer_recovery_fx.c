@@ -1110,12 +1110,8 @@ void hfc_fx_error_common(struct port_info *pp,
 	err1->err_xrb.softlog		= core->xrb[num_work].xcrb.softlog ;
 	err1->err_xrb.sbc			= core->xrb[num_work].xcrb.sbc ;
 	err1->err_xrb.fsb			= core->xrb[num_work].xcrb.fsb ;
-	/* kernel 6.x: fortify-source field-boundary warning suppression (XRB err_code copy) */
-	#pragma GCC diagnostic push
-	#pragma GCC diagnostic ignored "-Wattribute-warning"
 	memcpy(&(err1->err_xrb.err_code[0]), 
 			(uchar *)&core->xrb[num_work].xcrb.err_code[0], 4) ;
-	#pragma GCC diagnostic pop
 	err1->err_xrb.valid			= core->xrb[num_work].xcrbchk.valid ;
 	memcpy(&(err1->err_xrb.trans_s_id[0]), 
 			(uchar *)&core->xrb[num_work].xcrb.trans_s_id[0], 3) ;

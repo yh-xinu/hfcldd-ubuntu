@@ -5260,9 +5260,7 @@ int hfc_wwn_info( struct adap_info *ap, void *arg ) {
 			memcpy( (char *)&bios_info.BCV_Table[i].wwpn, &portbuf[0x18 + 0x10 * i], 8);
 			bios_info.BCV_Table[i].lun = portbuf[0x16 + 0x10 * i] * 256 + portbuf[0x17 + 0x10 * i];
 		}
-		/* kernel 6.x: split memcpy to respect fortify field boundaries */
-		memcpy( (char *)&bios_info.expansion_control[0],  &portbuf[0x90], sizeof(bios_info.expansion_control));
-		memcpy( (char *)&bios_info.byte176[0], &portbuf[0x90 + (int)sizeof(bios_info.expansion_control)], sizeof(bios_info.byte176));
+		memcpy( (char *)&bios_info.expansion_control[0],  &portbuf[0x90], 112);
 
 		/* Write back to hfc_ioctl_wwn structure */
 		if( COPYOUT( (uchar *)&bios_info, ( char * )wwn_info->boot_info_p, sizeof(struct hfc_bios_info) ) != 0 ) {
